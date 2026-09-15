@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="64">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="76">
  <tileset firstgid="1" source="Autotile_Grass_and_Dirt_Path_Tileset.tsx"/>
  <tileset firstgid="232" source="Tileset_Floor_Detail.tsx"/>
  <tileset firstgid="287" source="Nature_Tileset.tsx"/>
@@ -137,18 +137,18 @@
 </data>
  </layer>
  <objectgroup id="2" name="Слой объектов 1">
-  <object id="32" gid="314" x="1280" y="880" width="16" height="16"/>
-  <object id="33" gid="315" x="1296" y="880" width="16" height="16"/>
-  <object id="34" gid="316" x="1312" y="880" width="16" height="16"/>
-  <object id="35" gid="317" x="1328" y="880" width="16" height="16"/>
-  <object id="36" gid="335" x="1280" y="896" width="16" height="16"/>
-  <object id="37" gid="336" x="1296" y="896" width="16" height="16"/>
-  <object id="38" gid="337" x="1312" y="896" width="16" height="16"/>
-  <object id="39" gid="338" x="1328" y="896" width="16" height="16"/>
-  <object id="40" gid="359" x="1328" y="912" width="16" height="16"/>
-  <object id="41" gid="358" x="1312" y="912" width="16" height="16"/>
-  <object id="42" gid="357" x="1296" y="912" width="16" height="16"/>
-  <object id="43" gid="356" x="1280" y="912" width="16" height="16"/>
+  <object id="32" gid="314" x="1312" y="1024" width="16" height="16"/>
+  <object id="33" gid="315" x="1328" y="1024" width="16" height="16"/>
+  <object id="34" gid="316" x="1344" y="1024" width="16" height="16"/>
+  <object id="35" gid="317" x="1360" y="1024" width="16" height="16"/>
+  <object id="36" gid="335" x="1312" y="1040" width="16" height="16"/>
+  <object id="37" gid="336" x="1328" y="1040" width="16" height="16"/>
+  <object id="38" gid="337" x="1344" y="1040" width="16" height="16"/>
+  <object id="39" gid="338" x="1360" y="1040" width="16" height="16"/>
+  <object id="40" gid="359" x="1360" y="1056" width="16" height="16"/>
+  <object id="41" gid="358" x="1344" y="1056" width="16" height="16"/>
+  <object id="42" gid="357" x="1328" y="1056" width="16" height="16"/>
+  <object id="43" gid="356" x="1312" y="1056" width="16" height="16"/>
   <object id="62" gid="612" x="1280" y="848" width="16" height="16"/>
   <object id="63" gid="614" x="1216" y="848" width="16" height="16"/>
  </objectgroup>
