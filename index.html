@@ -1,0 +1,2705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Хуторок — фермерская игра</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/rubik@latest/cyrillic-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/rubik@latest/cyrillic-700-normal.css">
+<style>
+/* Свободный кириллический пиксельный шрифт Pixellari Cyrillic
+   (авторы: YuRaNnNzZZ / zedseven, 100% free to use) */
+@font-face{
+  font-family:'Pixellari';
+  src:url('https://cdn.jsdelivr.net/gh/YuRaNnNzZZ/PixellariCyrillic@master/Pixellari.ttf') format('truetype'),
+      url('https://raw.githubusercontent.com/YuRaNnNzZZ/PixellariCyrillic/master/Pixellari.ttf') format('truetype');
+  font-display:swap;
+}
+:root{--sz:46px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a2218;font-family:'Pixellari','Rubik',system-ui,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+#game{position:fixed;inset:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;image-rendering:crisp-edges}
+.coin{display:inline-block;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe98a,#e8b628 60%,#a87c14);border:1px solid #7a5a10;vertical-align:-1px;flex-shrink:0}
+.hud{position:fixed;z-index:10;pointer-events:none}
+#topL{top:calc(8px + env(safe-area-inset-top));left:8px;display:flex;flex-direction:column;gap:5px;max-width:62vw}
+.pill{background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;color:#f2ecd8;padding:4px 9px;font-size:13px;font-weight:400;display:flex;align-items:center;gap:5px;text-shadow:1px 1px 0 #000;white-space:nowrap}
+#miniWrap{top:calc(8px + env(safe-area-inset-top));right:8px;background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;padding:4px}
+#mini{display:block;width:100px;height:100px;image-rendering:pixelated;border-radius:6px}
+.tbtn{position:fixed;right:8px;pointer-events:auto;width:40px;height:40px;border-radius:10px;background:rgba(20,26,20,.85);border:2px solid #4a5a3a;color:#ffe9a8;font-size:19px;font-weight:400;cursor:pointer;z-index:11;font-family:inherit}
+#menuBtn{top:calc(134px + env(safe-area-inset-top))}
+#invBtn{top:calc(182px + env(safe-area-inset-top))}
+#toast{position:fixed;top:calc(232px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:max-content;max-width:min(76vw,380px);background:rgba(15,20,12,.93);border:2px solid #ffd75e;border-radius:10px;color:#ffe9a8;padding:8px 16px;font-size:13px;font-weight:400;display:none;z-index:30;text-align:center;text-shadow:1px 1px 0 #000}
+#hint{bottom:calc(216px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:min(48vw,340px);background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;color:#ffe9a8;padding:5px 11px;font-size:12px;font-weight:400;text-align:center;text-shadow:1px 1px 0 #000;white-space:normal;display:none}
+#prompt{bottom:calc(170px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:min(48vw,340px);background:rgba(30,40,25,.9);border:2px solid #8aa860;border-radius:10px;color:#fff;padding:6px 13px;font-size:13px;font-weight:400;display:none;text-shadow:1px 1px 0 #000;text-align:center;white-space:normal}
+#chips{bottom:calc(268px + env(safe-area-inset-bottom));right:16px;display:flex;flex-direction:column;gap:6px;pointer-events:auto;align-items:flex-end;z-index:11}
+.chip{background:rgba(20,26,20,.88);border:2px solid #4a5a3a;border-radius:10px;color:#f2ecd8;font-size:16px;padding:5px 9px;cursor:pointer;font-weight:400;display:flex;align-items:center;gap:5px;font-family:inherit}
+.chip b{font-size:12px;color:#ffe9a8;font-weight:400}
+.chip.on{border-color:#ffd75e;background:#4a5a2a;box-shadow:0 0 8px #ffd75e88}
+#joy{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;background:rgba(30,40,25,.5);border:2px solid rgba(140,170,100,.55);pointer-events:auto;z-index:12}
+#stick{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(160,190,110,.75);border:2px solid rgba(240,240,210,.7)}
+#btns{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));right:14px;display:flex;flex-direction:column;gap:10px;z-index:11;pointer-events:auto;align-items:flex-end}
+.abtn{width:66px;height:66px;border-radius:50%;border:2px solid #8aa860;background:rgba(35,48,28,.9);color:#f2ecd8;font-size:11px;font-weight:400;cursor:pointer;text-shadow:1px 1px 0 #000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1;font-family:inherit}
+.abtn .ic{font-size:20px}
+#abtnE{width:78px;height:78px;background:rgba(90,110,45,.95);border-color:#ffd75e}
+#modalWrap{position:fixed;inset:0;background:rgba(5,8,4,.72);z-index:40;display:none;align-items:center;justify-content:center;padding:12px}
+#modal{background:#232c1e;border:3px solid #8aa860;border-radius:14px;color:#f2ecd8;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:16px;font-size:14px;box-shadow:0 10px 40px #000}
+#modal h2{color:#ffd75e;font-size:18px;margin-bottom:8px;text-shadow:1px 1px 0 #000;font-weight:400}
+#modal h3{color:#cfe0a8;font-size:13px;margin:10px 0 5px;font-weight:400}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#2c3726;border:1px solid #4a5a3a;border-radius:8px;padding:7px 10px;margin-bottom:6px}
+.mrow .inf{flex:1;line-height:1.35}
+.mrow .sub,#modal .sub{font-size:11px;color:#a8b890}
+.mbtn{background:#5c7a35;border:2px solid #a8c870;color:#fff;border-radius:8px;padding:6px 10px;font-weight:400;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.mbtn:active{transform:scale(.96)}
+.mbtn:disabled{background:#3a4232;border-color:#55604a;color:#8a9478;cursor:default}
+.mbtn.red{background:#8a3a2a;border-color:#c86a50}
+.mclose{display:block;margin:12px auto 0;background:#3a4a2c;border:2px solid #8aa860;color:#ffe9a8;border-radius:10px;padding:8px 26px;font-weight:400;font-size:14px;cursor:pointer;font-family:inherit}
+.thumb{width:52px;height:52px;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;flex-shrink:0}
+.tag{display:inline-block;background:#4a5a2a;border-radius:6px;padding:1px 7px;font-size:11px;margin:1px;color:#ffe9a8}
+.invtop{display:flex;gap:6px;align-items:center;min-height:calc(var(--sz) + 8px);margin-bottom:6px;flex-wrap:wrap}
+.heldname{font-size:12px;color:#ffe9a8;font-weight:400}
+.invgrid{display:grid;grid-template-columns:repeat(var(--cols),var(--sz));gap:4px;justify-content:center;margin:0 auto 8px}
+.slot{position:relative;width:var(--sz);height:var(--sz);background:#1c2418;border:2px solid #4a5a3a;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:none}
+.slot>*{pointer-events:none}
+.slot .si{font-size:calc(var(--sz) * .5);line-height:1}
+.slot img.ei{width:86%;height:86%;image-rendering:pixelated}
+.slot .cn{position:absolute;right:2px;bottom:0;font-size:10px;font-weight:400;color:#fff;text-shadow:1px 1px 0 #000}
+.slot .lv{position:absolute;left:2px;top:0;font-size:9px;font-weight:400;color:#ffd75e;text-shadow:1px 1px 0 #000}
+.slot .ph{font-size:10px;opacity:.45;text-align:center;padding:2px;line-height:1.1}
+.slot.eq{border-style:dashed;border-color:#8aa860}
+.slot.t-seed{border-color:#a8875a;background:#241f16}
+.slot.t-crop{border-color:#6aa84f;background:#1c2418}
+.slot.t-liq{border-color:#4f83cc;background:#16202c}
+.slot.t-equip{border-color:#b0b8c0;background:#20242a}
+.slot.offer{border-color:#8a7a3a}
+.slot.offer.poor{opacity:.45}
+.slot.offer .pr{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-weight:400;background:rgba(0,0,0,.62);color:#ffd75e;text-align:center;border-radius:0 0 4px 4px;padding:1px 0;display:flex;align-items:center;justify-content:center;gap:2px}
+.slot.offer .pr .coin{width:8px;height:8px}
+.slot.offer .bn{position:absolute;right:2px;top:0;font-size:10px;font-weight:400;color:#fff;text-shadow:1px 1px 0 #000}
+.slot.sell{border-color:#c8a24a;background:#2a2416;border-style:dashed}
+.slot.basket{border-color:#d87a3a;background:#2a1f16;border-style:dashed}
+.slot.split{border-color:#8aa860;background:#1f2618}
+#heldEl{position:fixed;z-index:60;pointer-events:none;display:none;width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2)}
+#heldEl .slot{width:100%;height:100%;box-shadow:0 4px 12px rgba(0,0,0,.55)}
+#tip{position:fixed;z-index:70;display:none;max-width:250px;background:rgba(10,14,8,.96);border:2px solid #8aa860;border-radius:8px;color:#e8f0d8;padding:6px 9px;font-size:12px;line-height:1.45;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+#mainMenu{position:fixed;inset:0;background:rgba(10,14,8,.92);z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+#mainMenu h1{color:#ffd75e;font-size:34px;margin-bottom:10px;text-shadow:2px 2px 0 #3a4a20;font-weight:400;letter-spacing:2px}
+#mainMenu .mm-row{display:flex;align-items:center;justify-content:space-between;width:min(340px,90vw);background:#232c1e;border:2px solid #4a5a3a;border-radius:10px;padding:8px 12px;color:#f2ecd8;font-weight:400;font-size:14px}
+#mainMenu .mm-btn{background:#5c7a35;border:2px solid #a8c870;color:#fff;border-radius:8px;padding:6px 12px;font-weight:400;font-size:12px;cursor:pointer;font-family:inherit}
+#mainMenu .mm-btn.off{background:#3a4232;border-color:#55604a;color:#8a9478}
+#mainMenu .mm-start{margin-top:16px;background:#8a6a2a;border-color:#ffd75e;font-size:16px;padding:10px 28px}
+#mainMenu .mm-credit{font-size:10px;color:#6a7a5a;max-width:90vw;margin-top:8px}
+#load{position:fixed;inset:0;background:#141a10;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#ffe9a8;padding:20px;text-align:center}
+#load h1{font-size:42px;letter-spacing:4px;text-shadow:3px 3px 0 #3a4a20;color:#ffd75e;font-weight:400}
+#load p{font-size:13px;color:#a8b890;max-width:90vw}
+#bar{width:240px;height:14px;border:2px solid #8aa860;border-radius:8px;overflow:hidden;background:#20281a}
+#barF{height:100%;width:0%;background:#8ac050;transition:width .2s}
+#offlineBtn{display:none;background:#8a5a2a;border:2px solid #e0a050;color:#fff;border-radius:10px;padding:10px 20px;font-weight:400;font-size:14px;cursor:pointer;font-family:inherit}
+@media (max-width:430px){:root{--sz:40px}}
+@media (max-height:520px){
+  :root{--sz:38px}
+  #joy{width:104px;height:104px;left:12px}
+  #stick{width:46px;height:46px;margin:-23px 0 0 -23px}
+  .abtn{width:54px;height:54px;font-size:10px}
+  #abtnE{width:64px;height:64px}
+  #mini{width:72px;height:72px}
+  #menuBtn{top:calc(100px + env(safe-area-inset-top))}
+  #invBtn{top:calc(148px + env(safe-area-inset-top))}
+  #toast{top:calc(196px + env(safe-area-inset-top));max-width:58vw;font-size:12px}
+  #chips{flex-direction:row;bottom:calc(212px + env(safe-area-inset-bottom));right:12px;max-width:56vw}
+  #hint{bottom:calc(196px + env(safe-area-inset-bottom))}
+  #prompt{bottom:calc(152px + env(safe-area-inset-bottom))}
+}
+/* ================= ПК-версия: крупнее шрифт и слоты ================= */
+@media (min-width:768px){
+  :root{--sz:54px}
+  .pill{font-size:17px;padding:6px 12px;gap:7px}
+  .coin{width:15px;height:15px}
+  #mini{width:128px;height:128px}
+  .tbtn{width:48px;height:48px;font-size:23px}
+  #menuBtn{top:calc(160px + env(safe-area-inset-top))}
+  #invBtn{top:calc(216px + env(safe-area-inset-top))}
+  #toast{top:calc(276px + env(safe-area-inset-top));font-size:17px;max-width:min(70vw,520px);padding:10px 20px}
+  #hint{font-size:15px;max-width:min(46vw,520px);padding:8px 14px;bottom:calc(236px + env(safe-area-inset-bottom))}
+  #prompt{font-size:17px;max-width:min(46vw,520px);padding:8px 16px;bottom:calc(184px + env(safe-area-inset-bottom))}
+  .chip{font-size:20px;padding:7px 12px}
+  .chip b{font-size:15px}
+  #chips{bottom:calc(292px + env(safe-area-inset-bottom));right:20px;gap:8px}
+  .abtn{width:76px;height:76px;font-size:14px}
+  .abtn .ic{font-size:24px}
+  #abtnE{width:88px;height:88px}
+  #joy{width:150px;height:150px}
+  #stick{width:64px;height:64px;margin:-32px 0 0 -32px}
+  #modal{font-size:18px;max-width:680px;padding:20px}
+  #modal h2{font-size:24px}
+  #modal h3{font-size:17px}
+  #modal p{line-height:1.55}
+  .mrow{padding:9px 12px}
+  .mrow .sub,#modal .sub{font-size:14px}
+  .mbtn{font-size:15px;padding:8px 13px}
+  .mclose{font-size:18px;padding:10px 32px}
+  .thumb{width:60px;height:60px}
+  .tag{font-size:13px}
+  .heldname{font-size:15px}
+  .slot .cn{font-size:12px}
+  .slot .lv{font-size:11px}
+  .slot .ph{font-size:12px}
+  .slot.offer .pr{font-size:11px}
+  .slot.offer .pr .coin{width:10px;height:10px}
+  .slot.offer .bn{font-size:12px}
+  #tip{font-size:15px;max-width:340px;padding:8px 11px;line-height:1.5}
+  #mainMenu h1{font-size:46px}
+  #mainMenu .mm-row{font-size:18px;width:min(440px,90vw);padding:10px 14px}
+  #mainMenu .mm-btn{font-size:15px;padding:8px 16px}
+  #mainMenu .mm-start{font-size:20px;padding:12px 34px}
+  #mainMenu .mm-credit{font-size:12px}
+  #load h1{font-size:58px}
+  #load p{font-size:17px}
+  #bar{width:320px;height:18px}
+  #offlineBtn{font-size:17px;padding:12px 24px}
+}
+</style>
+</head>
+<body>
+<div id="topL" class="hud">
+  <div class="pill" id="hMoney"><i class="coin"></i> 100000</div>
+  <div class="pill" id="hTime">📅 День 1 • 06:00</div>
+  <div class="pill" id="hWx">☀️ Ясно</div>
+  <div class="pill" id="hSpeed" style="display:none">🚜 0 км/ч</div>
+  <div class="pill" id="hCargo" style="display:none"></div>
+</div>
+<div id="miniWrap" class="hud"><canvas id="mini" width="128" height="128"></canvas></div>
+<button id="menuBtn" class="tbtn">☰</button>
+<button id="invBtn" class="tbtn">🎒</button>
+<div id="hint" class="hud"></div>
+<div id="prompt" class="hud"></div>
+<div id="chips" class="hud"></div>
+
+<div id="joy"><div id="stick"></div></div>
+<div id="btns">
+  <button class="abtn" id="abtnQ"><span class="ic">🚪</span><span id="qLbl">Сесть</span></button>
+  <button class="abtn" id="abtnE"><span class="ic">✋</span><span id="eLbl">—</span></button>
+  <button class="abtn" id="abtnF"><span class="ic" id="fIc">⬇️</span><span>Навесное</span></button>
+</div>
+<div id="toast"></div>
+<div id="heldEl"></div>
+<div id="tip"></div>
+
+<div id="modalWrap"><div id="modal"></div></div>
+
+<div id="mainMenu">
+  <h1>ХУТОРОК</h1>
+  <div class="mm-row"><span>Звук</span><button class="mm-btn" id="mmSound">Вкл</button></div>
+  <div class="mm-row"><span>Подсказки на экране</span><button class="mm-btn" id="mmHints">Вкл</button></div>
+  <button class="mm-btn mm-start" id="mmHow">Как играть</button>
+  <button class="mm-btn mm-start" id="mmResume">Продолжить</button>
+  <div class="mm-credit">Шрифт: Pixellari Cyrillic — © YuRaNnNzZZ / zedseven (свободная лицензия)</div>
+</div>
+
+<div id="load">
+  <h1>ХУТОРОК</h1>
+  <div id="bar"><div id="barF"></div></div>
+  <p id="loadTxt">Загрузка мира…</p>
+  <button id="offlineBtn">🌐 Сеть недоступна — играть офлайн</button>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Рендеринг на pixi.js v7. Шрифт: пиксельный Pixellari Cyrillic.
+   Внутриигровой текст — в экранном пространстве (без размытия),
+   размер текста и слотов увеличен на ПК.
+   ===================================================================== */
+const GH='https://raw.githubusercontent.com/kennyepish/Khutorok-2/main/';
+const TS=16, MW=128, MH=128;
+const DAY_SEC=360, HOUR_SEC=15;
+const ASSET_TIMEOUT=7000, TMX_TIMEOUT=8000;
+const WATER_GID=35, FIELD_GID=59;
+const GARAGE_SLOTS=32;
+const TR_SLOTS={1:4,2:8,3:12};
+const TANK_CAP={1:40,2:80,3:150};
+const STACK={seed:100,crop:10,liq:100,equip:1};
+const COIN='<i class="coin"></i>';
+const FONT_STACK='Pixellari, Rubik, monospace';
+const TXT_RES=Math.min(window.devicePixelRatio||1,2);
+/* ПК-детект: крупнее внутриигровой текст */
+const IS_DESKTOP=(function(){
+  try{
+    if(window.matchMedia('(hover:hover) and (pointer:fine)').matches)return true;
+  }catch(e){}
+  return window.innerWidth>=768;
+})();
+const TXT_SZ={bld:IS_DESKTOP?16:12,ctx:IS_DESKTOP?17:13,float:IS_DESKTOP?17:13};
+
+/* Геометрия сцепки прицепа */
+const HITCH_BACK=10;
+const TRAILER_L=13;
+const TRAILER_ANG_SM=0.4;
+
+const CROPS={
+  wheat:{name:'Пшеница',icon:'🌾',days:1,seed:1,sell:22,yld:2},
+  carrot:{name:'Морковь',icon:'🥕',days:2,seed:2,sell:55,yld:2},
+  pumpkin:{name:'Тыква',icon:'🎃',days:3,seed:4,sell:110,yld:2}
+};
+const LIQ={water:{name:'Вода',icon:'💧'},fert:{name:'Удобрение',icon:'🧪'},herb:{name:'Гербицид',icon:'☠️'}};
+const TRACTORS=[
+  {name:'Кубона',hp:60,price:0,spr:'t1'},
+  {name:'Чернорус',hp:90,price:2000,spr:'t2'},
+  {name:'Джонни Олень',hp:120,price:4500,spr:'t3'},
+  {name:'Масяня',hp:150,price:9000,spr:'t4'},
+  {name:'Фельд',hp:180,price:16000,spr:'t5'}
+];
+const FRONT={
+  seeder:{name:'Сеялка',power:[10,12,15],color:'#8a6a3f'},
+  waterer:{name:'Поливалка',power:[12,15,18],color:'#4f83cc'},
+  weeder:{name:'Пропольник',power:[14,17,20],color:'#9aa0a8'},
+  header:{name:'Жатка',power:[18,22,28],color:'#c9a227'}
+};
+const REAR={plow:{name:'Плуг',power:[25,30,36]},trailer:{name:'Прицеп',power:[10,12,15]},tanker:{name:'Цистерна',power:[14,17,20]}};
+const EQPRICE={seeder:[150,450,1200],waterer:[200,600,1500],weeder:[150,400,1100],header:[300,800,1800],plow:[200,550,1300],trailer:[250,700,1600],tanker:[300,800,1700]};
+const TCOL=['#cf3a2a','#3d434a','#3f8a35','#3f6fb5','#e0902a'];
+
+function normLvl(l){const n=parseInt(l,10);return isNaN(n)?1:Math.max(1,Math.min(3,n));}
+function eqPower(it){const A=FRONT[it.kind]||REAR[it.kind];const p=A.power;return Array.isArray(p)?p[normLvl(it.lvl)-1]:p;}
+function eqWidth(lvl){return normLvl(lvl);}
+
+/* ================= НАСТРОЙКИ ================= */
+let SETTINGS={sound:true,hints:true};
+try{const s=JSON.parse(localStorage.getItem('khutorok_settings'));if(s)SETTINGS=s;}catch(e){}
+function saveSettings(){try{localStorage.setItem('khutorok_settings',JSON.stringify(SETTINGS));}catch(e){}}
+function applySettingsUI(){
+  const sb=$('mmSound'),hb=$('mmHints');
+  sb.textContent=SETTINGS.sound?'Вкл':'Выкл';sb.classList.toggle('off',!SETTINGS.sound);
+  hb.textContent=SETTINGS.hints?'Вкл':'Выкл';hb.classList.toggle('off',!SETTINGS.hints);
+  $('hint').style.display=SETTINGS.hints?'block':'none';
+}
+
+/* ================= УТИЛИТЫ ================= */
+function IW(im){return im?(im.naturalWidth||im.width):0;}
+function IH(im){return im?(im.naturalHeight||im.height):0;}
+function rnd(s){const v=Math.sin(s*127.1)*43758.5453;return v-Math.floor(v);}
+function $(id){return document.getElementById(id);}
+function setLoad(t){const el=$('loadTxt');if(el)el.textContent=t;}
+let booted=false;
+window.addEventListener('error',ev=>{if(!booted)setLoad('⚠ Ошибка: '+ev.message);});
+function dvec(e){
+  let dx=(typeof e.dx==='number'&&!isNaN(e.dx))?e.dx:0;
+  let dy=(typeof e.dy==='number'&&!isNaN(e.dy))?e.dy:1;
+  if(dx===0&&dy===0)dy=1;
+  return[dx,dy];
+}
+const OCT=[[2,1],[2,2],[1,2],[0,2],[0,1],[0,0],[1,0],[2,0]];
+function octant(x,y){const a=Math.atan2(y,x);let i=Math.round(a/(Math.PI/4));i=((i%8)+8)%8;return OCT[i];}
+function perpDir(dx,dy){
+  const o=octant(dx||0,dy||1);
+  const sx=o[0]-1, sy=o[1]-1;
+  let px=-sy, py=sx;
+  if(px===0&&py===0)py=1;
+  return[px,py];
+}
+
+/* ================= ЗАГРУЗКА PIXI И ШРИФТА ================= */
+function pixiIsV7(){
+  return !!(window.PIXI&&PIXI.Application&&PIXI.Container&&/^7\./.test(String(PIXI.VERSION||'')));
+}
+function loadPixi(){
+  return new Promise((resolve,reject)=>{
+    if(pixiIsV7())return resolve();
+    const urls=[
+      'https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js',
+      'https://unpkg.com/pixi.js@7.4.2/dist/pixi.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.4.2/pixi.min.js'
+    ];
+    let i=0;
+    const next=()=>{
+      if(i>=urls.length){
+        if(pixiIsV7())return resolve();
+        return reject(new Error(window.PIXI?('несовместимая версия pixi.js: '+PIXI.VERSION):'pixi.js не загрузился'));
+      }
+      const s=document.createElement('script');
+      s.src=urls[i++];
+      s.onload=()=>pixiIsV7()?resolve():next();
+      s.onerror=next;
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+async function loadFonts(){
+  try{
+    if(document.fonts&&document.fonts.load){
+      await Promise.race([
+        Promise.all([document.fonts.load('12px Pixellari'),document.fonts.load('16px Pixellari'),document.fonts.ready]),
+        new Promise(r=>setTimeout(r,5000))
+      ]);
+    }
+  }catch(e){}
+}
+function nearestTex(t){
+  try{
+    if(t&&t.baseTexture)t.baseTexture.scaleMode=0;
+    else if(t&&t.isBaseTexture)t.scaleMode=0;
+  }catch(e){}
+  return t;
+}
+function addBlend(){
+  return (window.PIXI&&PIXI.BLEND_MODES&&PIXI.BLEND_MODES.ADD!==undefined)?PIXI.BLEND_MODES.ADD:1;
+}
+
+/* ================= ПРЕДМЕТЫ ================= */
+function mkEquip(kind,lvl){
+  const slot=FRONT[kind]?'front':'rear';
+  const it={t:'equip',slot,kind,lvl:normLvl(lvl),n:1};
+  if(kind==='trailer')it.slots=new Array(TR_SLOTS[it.lvl]||4).fill(null);
+  if(kind==='tanker')it.slots=[null];
+  return it;
+}
+function equipPrice(it){return EQPRICE[it.kind]?EQPRICE[it.kind][normLvl(it.lvl)-1]:0;}
+function stackCap(it){return it?(STACK[it.t]||1):1;}
+function sameStack(a,b){return !!(a&&b&&a.t===b.t&&a.t!=='equip'&&a.crop===b.crop&&a.liq===b.liq);}
+function cloneItem(it,n){const c=Object.assign({},it);if(n!==undefined)c.n=n;return c;}
+function itemName(it){
+  if(!it)return'Пусто';
+  if(it.t==='seed')return CROPS[it.crop].icon+' Семена: '+CROPS[it.crop].name;
+  if(it.t==='crop')return CROPS[it.crop].icon+' Урожай: '+CROPS[it.crop].name;
+  if(it.t==='liq')return LIQ[it.liq].icon+' '+LIQ[it.liq].name;
+  return (FRONT[it.kind]||REAR[it.kind]).name+' ур.'+normLvl(it.lvl);
+}
+function itemDesc(it){
+  if(!it)return'';
+  if(it.t==='seed'){const C=CROPS[it.crop];return`<b>${C.icon} Семена: ${C.name} ×${it.n}</b><br>Стак до 100. Рост ${C.days} дн. Сеет сеялка.`;}
+  if(it.t==='crop'){const C=CROPS[it.crop];return`<b>${C.icon} Урожай: ${C.name} ×${it.n}</b><br>Стак до 10. Сдать в амбаре: ${C.sell} мон./шт.`;}
+  if(it.t==='liq'){
+    const L=LIQ[it.liq];
+    const use=it.liq==='water'?'Полив грядок':it.liq==='fert'?'Удобрение: +50% к урожаю':'Гербицид: сорняки не растут 14 дней';
+    return`<b>${L.icon} ${L.name} ×${it.n}</b><br>${use}.<br>Хранение: только цистерна или гараж.`;
+  }
+  const A=FRONT[it.kind]||REAR[it.kind];
+  let d=`<b>${A.name}, ур. ${normLvl(it.lvl)}</b><br>${it.slot==='front'?'Передний слот трактора':'Фаркоп (задний слот)'}. Расход мощности: ${eqPower(it)} лс. Продажа: ${Math.floor(equipPrice(it)/2)} мон.`;
+  if(FRONT[it.kind])d+=`<br><b>Ширина обработки: ${eqWidth(it.lvl)} тайл(ов)</b> за проход.`;
+  if(it.kind==='plow')d+=`<br><b>Ширина вспашки: ${eqWidth(it.lvl)} тайл(ов)</b> за проход.`;
+  if(it.kind==='trailer')d+=`<br><b>Грузовых слотов: ${TR_SLOTS[normLvl(it.lvl)]}</b>. Не перевозит жидкости, прицепы и цистерны. На дороге следует за трактором через фаркоп.`;
+  if(it.kind==='tanker')d+=`<br><b>Слот жидкости: ${TANK_CAP[normLvl(it.lvl)]} л</b>, без смешивания.`;
+  if(it.kind==='header')d+=`<br>Сбор урожая в прицеп.`;
+  return d;
+}
+function offerDesc(o){
+  if(!o)return'';
+  const it=o.make();
+  let d=itemDesc(it);
+  d+=it.t==='equip'?`<br><b>Цена: ${o.price} мон.</b> Перетащите в свободный слот трактора для покупки.`:`<br><b>Цена: ${o.price} мон.</b> Перетащите в слот прицепа/цистерны/гаража для покупки.`;
+  return d;
+}
+const EQICONS={};
+function equipIcon(kind,lvl){
+  lvl=normLvl(lvl);
+  const kk=kind+lvl;if(EQICONS[kk])return EQICONS[kk];
+  const c=document.createElement('canvas');c.width=32;c.height=32;const x=c.getContext('2d');
+  const col=FRONT[kind]?FRONT[kind].color:(kind==='plow'?'#8a9098':kind==='trailer'?'#8a6a3f':'#4f83cc');
+  x.translate(16,16);
+  const wS=lvl>=3?1.45:lvl===2?1.22:1;
+  if(kind==='header'){x.fillStyle=col;x.fillRect(-6,-10*wS,8,20*wS);x.fillStyle='#7a6218';x.beginPath();x.arc(5,0,5,0,7);x.fill();}
+  else if(kind==='waterer'){x.fillStyle=col;x.fillRect(-6,-8*wS,11,16*wS);x.fillStyle='#bcd6ee';x.fillRect(5,-10*wS,3,20*wS);x.fillStyle='#2c3e50';x.fillRect(-9,-3,3,6);}
+  else if(kind==='weeder'){x.fillStyle=col;x.fillRect(-4,-10*wS,7,20*wS);x.fillStyle='#d0d4d8';for(let i=Math.round(-9*wS);i<=9*wS;i+=4)x.fillRect(3,i,5,2);}
+  else if(kind==='seeder'){x.fillStyle=col;x.fillRect(-7,-9*wS,12,18*wS);x.fillStyle='#5d4426';for(let i=Math.round(-6*wS);i<=6*wS;i+=Math.max(4,Math.round(6*wS)))x.fillRect(5,i,5,3);x.fillStyle='#d8c14a';x.fillRect(-4,-5,6,4);}
+  else if(kind==='plow'){x.fillStyle='#5b6068';x.fillRect(-6,-10*wS,9,20*wS);x.fillStyle='#8a9098';x.fillRect(-11,-12*wS,5,24*wS);x.fillStyle='#3d4249';x.fillRect(3,-3,7,6);}
+  else if(kind==='trailer'){x.fillStyle='#6b4a2c';x.fillRect(-9,-9,18,18);x.fillStyle=col;x.fillRect(-7,-7,14,14);x.fillStyle='#1c1c1c';x.fillRect(-8,-13,5,3);x.fillRect(-8,10,5,3);x.fillRect(4,-13,5,3);x.fillRect(4,10,5,3);x.fillStyle='#444';x.fillRect(-14,-1,5,2);}
+  else if(kind==='tanker'){x.fillStyle=col;x.beginPath();if(x.roundRect)x.roundRect(-9,-8,18,16,7);else x.rect(-9,-8,18,16);x.fill();x.fillStyle='rgba(255,255,255,.3)';x.fillRect(-6,-5,12,3);x.fillStyle='#1c1c1c';x.fillRect(-8,-12,5,3);x.fillRect(-8,9,5,3);x.fillRect(4,-12,5,3);x.fillRect(4,9,5,3);x.fillStyle='#444';x.fillRect(-14,-1,5,2);}
+  x.fillStyle='#ffd75e';for(let i=0;i<lvl;i++)x.fillRect(-9+i*7,13,5,3);
+  const url=c.toDataURL();EQICONS[kk]=url;return url;
+}
+function itemHTML(it){
+  if(!it)return'';
+  if(it.t==='equip')return`<img class="ei" src="${equipIcon(it.kind,it.lvl)}" draggable="false"><span class="lv">L${normLvl(it.lvl)}</span>`;
+  const ic=it.t==='liq'?LIQ[it.liq].icon:CROPS[it.crop].icon;
+  return`<span class="si">${ic}</span><span class="cn">${it.n}</span>`;
+}
+function slotCls(it){return it?('t-'+(it.t==='equip'?'equip':it.t)):'';}
+
+/* ================= АССЕТЫ ================= */
+const IMG={};
+let mapL1=null,mapL2=null,mapCanvas=null,miniReady=false;
+const TILESETS=[];
+let grassGid=1;
+let loadDone=0,loadTotal=1;
+function prog(){loadDone++;const b=$('barF');if(b)b.style.width=Math.min(100,Math.round(loadDone/loadTotal*100))+'%';}
+function loadImgT(k,url){
+  return new Promise(res=>{
+    let done=false;const fin=v=>{if(done)return;done=true;res(v);};
+    try{
+      const i=new Image();i.crossOrigin='anonymous';
+      i.onload=()=>{IMG[k]=i;fin(1);};
+      i.onerror=()=>{IMG[k]=null;fin(1);};
+      setTimeout(()=>{IMG[k]=IMG[k]||null;fin(1);},ASSET_TIMEOUT);
+      i.src=url;
+    }catch(e){fin(1);}
+  });
+}
+async function fetchTMX(){
+  try{
+    let ctrl=null,to=null;
+    if(typeof AbortController!=='undefined'){ctrl=new AbortController();to=setTimeout(()=>ctrl.abort(),TMX_TIMEOUT);}
+    const r=await fetch(GH+'Tileset/Khutorok.tmx',ctrl?{signal:ctrl.signal,cache:'force-cache'}:{cache:'force-cache'});
+    if(to)clearTimeout(to);
+    return r.ok?await r.text():null;
+  }catch(e){return null;}
+}
+function parseTMX(txt){
+  mapL1=new Uint32Array(MW*MH);mapL2=new Uint32Array(MW*MH);
+  if(!txt){fillFallback();return;}
+  try{
+    const re=/<layer[^>]*?name="([^"]*)"[\s\S]*?<data[^>]*>([\s\S]*?)<\/data>/g;
+    let m,base=null,det=null;
+    while((m=re.exec(txt))!==null){
+      const arr=m[2].replace(/[^0-9,\-]/g,'').split(',').map(s=>parseInt(s)||0);
+      if(m[1].indexOf('Детали')>=0)det=arr;else if(!base)base=arr;
+    }
+    if(!base||base.length<MW*MH){fillFallback();return;}
+    for(let i=0;i<MW*MH;i++){mapL1[i]=base[i]||0;mapL2[i]=det?(det[i]||0):0;}
+    const cnt={};
+    for(let i=0;i<mapL1.length;i++){const g=mapL1[i];if(g>0&&g!==WATER_GID)cnt[g]=(cnt[g]||0)+1;}
+    let best=1,bc=0;for(const k in cnt)if(cnt[k]>bc){bc=cnt[k];best=+k;}
+    grassGid=best;
+  }catch(e){fillFallback();}
+}
+function fillFallback(){
+  mapL1=new Uint32Array(MW*MH);mapL2=new Uint32Array(MW*MH);
+  grassGid=1;
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const n=rnd(x*3.7+y*91.3);
+    mapL1[y*MW+x]=n<0.6?1:(n<0.8?2:3);
+  }
+  for(let x=6;x<122;x++){mapL1[60*MW+x]=39;mapL1[61*MW+x]=39;}
+  for(let y=26;y<98;y++){mapL1[y*MW+62]=39;mapL1[y*MW+63]=39;}
+  for(let y=80;y<98;y++)for(let x=22;x<40;x++){
+    const dx=(x-30)/8,dy=(y-89)/6,dd=dx*dx+dy*dy;
+    if(dd<1)mapL1[y*MW+x]=WATER_GID;else if(dd<1.35)mapL1[y*MW+x]=39;
+  }
+  const plots=[[47,68],[61,68],[75,68]];
+  for(const p of plots)for(let y=p[1];y<p[1]+8;y++)for(let x=p[0];x<p[0]+12;x++)mapL1[y*MW+x]=FIELD_GID;
+  const clear=(x,y)=>(Math.abs(x-64)<27&&Math.abs(y-64)<27)||(x>100&&x<127&&y>48&&y<78);
+  for(let y=2;y<MH-2;y++)for(let x=2;x<MW-2;x++){
+    if(clear(x,y))continue;
+    const g=mapL1[y*MW+x];
+    if(g!==1&&g!==2&&g!==3)continue;
+    const n=rnd(x*17.3+y*5.1);
+    if(n<0.045)mapL2[y*MW+x]=287;
+    else if(n<0.07)mapL2[y*MW+x]=288;
+    else if(n<0.078)mapL2[y*MW+x]=289;
+    else if(n<0.11)mapL2[y*MW+x]=290;
+  }
+}
+function gridCanvas(){const c=document.createElement('canvas');c.width=96;c.height=96;return c;}
+function makeTractorImg(color){
+  const c=gridCanvas(),x=c.getContext('2d');
+  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
+    if(sx===1&&sy===1)continue;
+    x.save();x.translate(sx*32+16,sy*32+17);x.rotate(Math.atan2(sy-1,sx-1));
+    x.fillStyle='#1c1c1c';
+    x.fillRect(-9,-14,9,5);x.fillRect(-9,9,9,5);x.fillRect(6,-11,6,4);x.fillRect(6,7,6,4);
+    x.fillStyle=color;x.fillRect(-11,-8,22,16);
+    x.fillStyle='rgba(255,255,255,.22)';x.fillRect(-11,-8,22,3);
+    x.fillStyle='#2c3e50';x.fillRect(-7,-7,10,14);
+    x.fillStyle='#cfe6f5';x.fillRect(-5,-5,6,10);
+    x.fillStyle=color;x.fillRect(4,-6,8,12);
+    x.fillStyle='#111';x.fillRect(12,-3,2,6);
+    x.fillStyle='#555';x.fillRect(1,-10,2,3);
+    x.restore();
+  }
+  return c;
+}
+function makeBoyImg(){
+  const c=gridCanvas(),x=c.getContext('2d');
+  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
+    const dx=sx-1,dy=sy-1;
+    x.save();x.translate(sx*32+16,sy*32+18);
+    x.fillStyle='#3a4a7a';x.fillRect(-4,4,3,7);x.fillRect(1,4,3,7);
+    x.fillStyle='#c0392b';x.fillRect(-5,-3,10,8);x.fillRect(-7,-2,2,6);x.fillRect(5,-2,2,6);
+    x.fillStyle='#f0c8a0';x.fillRect(-4,-11,8,8);
+    x.fillStyle='#6b4a2c';x.fillRect(-4,-12,8,3);
+    if(dy>0){x.fillStyle='#222';x.fillRect(-3,-8,2,2);x.fillRect(1,-8,2,2);}
+    else if(dy===0){x.fillStyle='#222';x.fillRect(dx>0?1:-3,-8,2,2);}
+    else{x.fillStyle='#6b4a2c';x.fillRect(-4,-11,8,6);}
+    x.restore();
+  }
+  return c;
+}
+function makeVehicleImg(color,type){
+  const c=gridCanvas(),x=c.getContext('2d');
+  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
+    if(sx===1&&sy===1)continue;
+    x.save();x.translate(sx*32+16,sy*32+17);x.rotate(Math.atan2(sy-1,sx-1));
+    x.fillStyle='#1c1c1c';x.fillRect(-7,-12,6,4);x.fillRect(-7,8,6,4);x.fillRect(4,-12,6,4);x.fillRect(4,8,6,4);
+    if(type==='tanker'){
+      x.fillStyle=color;x.beginPath();
+      if(x.roundRect)x.roundRect(-9,-8,19,16,6);else x.rect(-9,-8,19,16);
+      x.fill();
+      x.fillStyle='rgba(255,255,255,.25)';x.fillRect(-7,-6,15,3);
+      x.fillStyle='#3a6aa8';x.fillRect(9,-5,3,10);
+    }else{
+      x.fillStyle='#6b4a2c';x.fillRect(-9,-9,18,18);
+      x.fillStyle=color;x.fillRect(-7,-7,14,14);
+      x.fillStyle='rgba(0,0,0,.2)';x.fillRect(-7,-1,14,2);x.fillRect(-1,-7,2,14);
+    }
+    x.restore();
+  }
+  return c;
+}
+function makeAutotileImg(){
+  const cols=16,rows=16;
+  const c=document.createElement('canvas');c.width=cols*TS;c.height=rows*TS;
+  const x=c.getContext('2d');
+  for(let i=0;i<cols*rows;i++){
+    const sx=(i%cols)*TS,sy=((i/cols)|0)*TS;
+    x.fillStyle=['#5d9a45','#5f9e47','#599341'][i%3];x.fillRect(sx,sy,TS,TS);
+    x.fillStyle='rgba(255,255,255,.07)';
+    for(let j=0;j<7;j++)x.fillRect(sx+((rnd(i*31+j*7)*15)|0),sy+((rnd(i*17+j*13)*15)|0),1,2);
+    x.fillStyle='rgba(0,0,0,.08)';
+    for(let j=0;j<5;j++)x.fillRect(sx+((rnd(i*53+j*3)*15)|0),sy+((rnd(i*29+j*11)*15)|0),2,1);
+  }
+  const paint=(idx,fn)=>fn(x,(idx%cols)*TS,((idx/cols)|0)*TS);
+  paint(WATER_GID-1,(x,sx,sy)=>{x.fillStyle='#3f6fb5';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(255,255,255,.2)';x.fillRect(sx+2,sy+4,7,1);x.fillRect(sx+7,sy+10,7,1);});
+  paint(38,(x,sx,sy)=>{x.fillStyle='#a8875a';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(0,0,0,.12)';for(let j=0;j<8;j++)x.fillRect(sx+((rnd(j*9)*15)|0),sy+((rnd(j*5)*15)|0),2,1);});
+  paint(FIELD_GID-1,(x,sx,sy)=>{x.fillStyle='#7a5636';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(0,0,0,.2)';for(let j=0;j<4;j++)x.fillRect(sx,sy+2+j*4,TS,1);});
+  return c;
+}
+function makeNatureImg(){
+  const cols=8,rows=8;
+  const c=document.createElement('canvas');c.width=cols*TS;c.height=rows*TS;
+  const x=c.getContext('2d');
+  const at=i=>[(i%cols)*TS,((i/cols)|0)*TS];
+  let p=at(0);
+  x.fillStyle='#6b4a2c';x.fillRect(p[0]+6,p[1]+9,4,6);
+  x.fillStyle='#2e6b2a';x.beginPath();x.arc(p[0]+8,p[1]+6,6,0,7);x.fill();
+  x.fillStyle='#4a8a3a';x.beginPath();x.arc(p[0]+6,p[1]+4,4,0,7);x.fill();
+  p=at(1);
+  x.fillStyle='#3f7a2a';x.beginPath();x.arc(p[0]+8,p[1]+10,5,0,7);x.fill();
+  x.fillStyle='#54913a';x.beginPath();x.arc(p[0]+6,p[1]+8,3,0,7);x.fill();
+  p=at(2);
+  x.fillStyle='#8d9298';x.beginPath();x.arc(p[0]+8,p[1]+10,5,0,7);x.fill();
+  x.fillStyle='#aeb4ba';x.beginPath();x.arc(p[0]+6,p[1]+8,3,0,7);x.fill();
+  p=at(3);
+  x.fillStyle='#3f7a2a';x.fillRect(p[0]+7,p[1]+8,1,6);x.fillRect(p[0]+4,p[1]+10,1,4);x.fillRect(p[0]+11,p[1]+9,1,5);
+  x.fillStyle='#e05a8a';x.fillRect(p[0]+6,p[1]+6,3,3);
+  x.fillStyle='#ffd75e';x.fillRect(p[0]+3,p[1]+8,3,3);
+  x.fillStyle='#e8e8f0';x.fillRect(p[0]+10,p[1]+7,3,3);
+  return c;
+}
+function ensureFallbacks(){
+  if(!IMG.boy)IMG.boy=makeBoyImg();
+  for(let i=0;i<5;i++){const k='t'+(i+1);if(!IMG[k])IMG[k]=makeTractorImg(TCOL[i]);}
+  if(!IMG.trailer1)IMG.trailer1=makeVehicleImg('#8a6a3f','trailer');
+  if(!IMG.trailer2)IMG.trailer2=makeVehicleImg('#7a5a3a','trailer');
+  if(!IMG.tanker)IMG.tanker=makeVehicleImg('#4f83cc','tanker');
+  if(!IMG.autotile)IMG.autotile=makeAutotileImg();
+  if(!IMG.nature)IMG.nature=makeNatureImg();
+  if(!mapL1)parseTMX(null);
+}
+function finishAssets(){
+  TILESETS.length=0;
+  const mk=(first,k)=>{
+    const im=IMG[k];
+    const cols=im?Math.max(1,Math.floor(IW(im)/TS)):16;
+    const rows=im?Math.max(1,Math.floor(IH(im)/TS)):16;
+    return{first,key:k,cols,rows,count:cols*rows};
+  };
+  TILESETS.push(mk(1,'autotile'),mk(232,'floor'),mk(287,'nature'));
+  TILESETS[0].count=Math.min(TILESETS[0].count,231);
+  TILESETS[1].count=Math.min(TILESETS[1].count,55);
+  buildTerrainCanvas();
+}
+function tileInfo(gid){
+  if(gid<=0)return null;
+  for(let s=0;s<TILESETS.length;s++){
+    const ts=TILESETS[s];
+    const last=(s+1<TILESETS.length)?TILESETS[s+1].first-1:1000000;
+    if(gid>=ts.first&&gid<=last){
+      const im=IMG[ts.key];if(!im)return null;
+      const idx=gid-ts.first;if(idx<0||idx>=ts.count)return null;
+      const tx=idx%ts.cols,ty=(idx/ts.cols)|0;
+      if(ty>=ts.rows)return null;
+      return{im,sx:tx*TS,sy:ty*TS};
+    }
+  }
+  return null;
+}
+function buildTerrainCanvas(){
+  mapCanvas=document.createElement('canvas');
+  mapCanvas.width=MW*TS;mapCanvas.height=MH*TS;
+  const c=mapCanvas.getContext('2d');
+  c.fillStyle='#5d9a45';c.fillRect(0,0,mapCanvas.width,mapCanvas.height);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const ti=tileInfo(mapL1[y*MW+x]);
+    if(ti)c.drawImage(ti.im,ti.sx,ti.sy,TS,TS,x*TS,y*TS,TS,TS);
+  }
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const g=mapL2[y*MW+x];if(!g)continue;
+    const ti=tileInfo(g);
+    if(ti)c.drawImage(ti.im,ti.sx,ti.sy,TS,TS,x*TS,y*TS,TS,TS);
+  }
+}
+function refreshTerrainRect(tx,ty,w,h){
+  if(!mapCanvas)return;
+  const c=mapCanvas.getContext('2d');
+  for(let y=ty;y<ty+h;y++)for(let x=tx;x<tx+w;x++){
+    if(x<0||y<0||x>=MW||y>=MH)continue;
+    c.fillStyle='#5d9a45';c.fillRect(x*TS,y*TS,TS,TS);
+    const ti=tileInfo(mapL1[y*MW+x]);
+    if(ti)c.drawImage(ti.im,ti.sx,ti.sy,TS,TS,x*TS,y*TS,TS,TS);
+    const g2=mapL2[y*MW+x];
+    if(g2){const t2=tileInfo(g2);if(t2)c.drawImage(t2.im,t2.sx,t2.sy,TS,TS,x*TS,y*TS,TS,TS);}
+  }
+  if(window.PIXI&&TEX.terrain&&TEX.terrain.baseTexture){try{TEX.terrain.baseTexture.update();}catch(e){}}
+}
+async function loadAssets(){
+  const list=[
+    ['autotile',GH+'Tileset/Autotile_Grass_and_Dirt_Path_Tileset.png'],
+    ['floor',GH+'Tileset/Tileset_Floor_Detail.png'],
+    ['nature',GH+'Tileset/Nature_Tileset.png'],
+    ['boy',GH+'Sprites/boy.png'],
+    ['t1',GH+'Sprites/tractor_1.png'],['t2',GH+'Sprites/tractor_2.png'],['t3',GH+'Sprites/tractor_3.png'],
+    ['t4',GH+'Sprites/tractor_4.png'],['t5',GH+'Sprites/tractor_5.png'],
+    ['trailer1',GH+'Sprites/trailer_1.png'],['trailer2',GH+'Sprites/trailer2.png'],
+    ['tanker',GH+'Sprites/tanker_1.png']
+  ];
+  loadTotal=list.length+1;loadDone=0;
+  const ps=list.map(([k,u])=>loadImgT(k,u).then(()=>{prog();}));
+  const tmxP=fetchTMX().then(t=>{parseTMX(t);prog();});
+  await Promise.all(ps.concat([tmxP]));
+}
+
+/* ================= ЗДАНИЯ ================= */
+function bldCanvas(type,W,H){
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(Math.round(a),Math.round(b),Math.round(w),Math.round(h));};
+  x.fillStyle='rgba(0,0,0,.22)';x.beginPath();x.ellipse(W/2,H-3,W*0.46,5,0,0,7);x.fill();
+  if(type==='barn'){
+    R(4,H*.44,W-8,H*.54,'#9c352a');
+    for(let i=1;i<6;i++)R(4+i*(W-8)/6,H*.44,1,H*.54,'rgba(0,0,0,.14)');
+    x.fillStyle='#4c4c58';x.beginPath();x.moveTo(0,H*.47);x.lineTo(W/2,2);x.lineTo(W,H*.47);x.closePath();x.fill();
+    x.fillStyle='rgba(0,0,0,.18)';for(let yy=8;yy<H*.46;yy+=6)x.fillRect(W/2-yy,yy,yy*2,1);
+    R(0,H*.45,W,3,'#35353f');
+    R(W/2-7,H*.16,14,15,'#7c2a20');R(W/2-1,H*.16,2,15,'#efe3c8');
+    R(W/2-11,H*.62,22,H*.36,'#5e3a1e');R(W/2-1,H*.62,2,H*.36,'#3d2712');
+    x.strokeStyle='#efe3c8';x.lineWidth=2;x.strokeRect(W/2-12,H*.61,24,H*.37);
+    R(9,H*.55,10,10,'#cfe6f5');R(13,H*.55,2,10,'#7a5a3a');R(9,H*.59,10,2,'#7a5a3a');
+    R(W-19,H*.55,10,10,'#cfe6f5');R(W-15,H*.55,2,10,'#7a5a3a');R(W-19,H*.59,10,2,'#7a5a3a');
+  } else if(type==='garage'){
+    R(3,H*.34,W-6,H*.64,'#98604a');
+    x.fillStyle='rgba(0,0,0,.15)';for(let yy=Math.round(H*.36);yy<H*.96;yy+=6)for(let xx=3;xx<W-3;xx+=10)x.fillRect(xx+((yy/6|0)%2)*5,yy,9,1);
+    R(0,H*.22,W,H*.14,'#55606a');R(0,H*.2,W,4,'#3d454d');
+    R(W*.18,H*.48,W*.64,H*.5,'#23262c');
+    x.fillStyle='#3a3f47';for(let yy=Math.round(H*.5);yy<H*.96;yy+=5)x.fillRect(W*.18,yy,W*.64,2);
+    R(W*.06,H*.55,W*.09,H*.43,'#4a3524');
+    R(W*.86,H*.4,7,7,'#ffd75e');
+  } else if(type==='shopA'){
+    R(3,H*.38,W-6,H*.6,'#b9a06a');
+    x.fillStyle='#3f7a45';x.beginPath();x.moveTo(0,H*.4);x.lineTo(W/2,2);x.lineTo(W,H*.4);x.closePath();x.fill();
+    R(0,H*.38,W,3,'#2e5c33');
+    for(let i=0;i<6;i++)R(4+i*(W-8)/6,H*.4,(W-8)/6-2,H*.1,i%2?'#e8e4d0':'#3f7a45');
+    R(W*.12,H*.58,W*.2,H*.16,'#cfe6f5');R(W*.68,H*.58,W*.2,H*.16,'#cfe6f5');
+    R(W*.42,H*.66,W*.16,H*.32,'#5e3a1e');
+    R(6,H*.82,12,10,'#7a5a3a');R(9,H*.78,6,5,'#9a7b4f');
+    R(W-18,H*.8,12,12,'#6a6f76');R(W-15,H*.74,6,7,'#c9a227');
+  } else if(type==='shopF'){
+    R(3,H*.38,W-6,H*.6,'#c8b287');
+    x.fillStyle='#3f5f9a';x.beginPath();x.moveTo(0,H*.4);x.lineTo(W/2,2);x.lineTo(W,H*.4);x.closePath();x.fill();
+    R(0,H*.38,W,3,'#2c4470');
+    for(let i=0;i<6;i++)R(4+i*(W-8)/6,H*.4,(W-8)/6-2,H*.1,i%2?'#e8e4d0':'#3f5f9a');
+    R(W*.1,H*.56,W*.24,H*.18,'#cfe6f5');R(W*.66,H*.56,W*.24,H*.18,'#cfe6f5');
+    R(W*.42,H*.66,W*.16,H*.32,'#6b4a2e');
+    R(5,H*.84,14,9,'#7a5a3a');x.fillStyle='#e08b2e';for(let i=0;i<4;i++)x.fillRect(7+i*3,H*.81,2,4);
+    R(W-19,H*.84,14,9,'#7a5a3a');x.fillStyle='#e2762f';x.beginPath();x.arc(W-12,H*.83,4,0,7);x.fill();
+  } else if(type==='dealer'){
+    R(2,H*.25,W-4,H*.72,'#5b5f66');
+    x.fillStyle='rgba(255,255,255,.14)';for(let xx=8;xx<W-8;xx+=14)x.fillRect(xx,H*.88,8,2);
+    x.strokeStyle='#e8e4d0';x.lineWidth=2;x.strokeRect(3,H*.26,W-6,H*.7);
+    for(let xx=3;xx<W-2;xx+=12)R(xx,H*.22,3,8,'#e8e4d0');
+    R(W*.3,H*.3,W*.4,H*.34,'#8a6a4a');
+    R(W*.28,H*.2,W*.44,H*.13,'#7a4a3a');
+    R(W*.4,H*.42,W*.2,H*.2,'#cfe6f5');
+    x.fillStyle='#d84040';x.fillRect(W*.78,H*.05,2,H*.2);
+    x.beginPath();x.moveTo(W*.78+2,H*.05);x.lineTo(W*.78+14,H*.09);x.lineTo(W*.78+2,H*.13);x.closePath();x.fill();
+  }
+  return c;
+}
+
+/* ================= СОСТОЯНИЕ ================= */
+let S=null;
+let spawn={x:64,y:64};
+let buildings=[];
+let boy={x:0,y:0,dx:0,dy:1,face:[1,2],hidden:false};
+let riding=null,selCrop='wheat',selMode='water';
+let cam={x:0,y:0},z=2,viewW=0,viewH=0;
+let modalOpen=false,joyV={x:0,y:0},keys={},speedNow=0;
+let floats=[],particles=[],smokes=[],rainDrops=[],ripples=[];
+let flash=0,boltT=8,smokeT=0,lastToast=0,hudT=0,saveT=0,chipSig='~';
+let BASKET=null;
+
+function key(x,y){return y*MW+x;}
+function mkTractor(tid,x,y){return{tid,x,y,dx:0,dy:1,face:[1,2],down:false,front:null,rear:null};}
+function newGame(){
+  const garage=new Array(GARAGE_SLOTS).fill(null);
+  let gi=0;
+  for(const k of ['seeder','waterer','weeder','header','plow','trailer','tanker'])garage[gi++]=mkEquip(k,1);
+  garage[gi++]={t:'seed',crop:'wheat',n:10};
+  return{money:100000,day:1,t:HOUR_SEC*6,rain:Math.random()<0.25,garage,tractors:[mkTractor(0,(spawn.x+2)*TS,(spawn.y-3)*TS)],soil:{},helpShown:false};
+}
+function serializeSoil(){
+  const soil={};
+  for(const k in S.soil){const s=S.soil[k];soil[k]=[s.weed?1:0,s.herb,s.crop?[s.crop.type,s.crop.g,s.crop.watered?1:0,s.crop.fert?1:0]:0];}
+  return soil;
+}
+function save(){
+  try{
+    const trs=S.tractors.map(t=>{
+      const c=Object.assign({},t);
+      delete c._fx;delete c._fy;delete c._rx;delete c._ry;delete c._trl;
+      return c;
+    });
+    localStorage.setItem('khutorok2',JSON.stringify({v:6,m:S.money,d:S.day,t:S.t,r:S.rain?1:0,gar:S.garage,tr:trs,soil:serializeSoil(),hs:S.helpShown}));
+  }catch(e){}
+}
+function sanitizeItem(it){
+  if(!it||it.t!=='equip')return it;
+  it.lvl=normLvl(it.lvl);
+  if(it.kind==='trailer'){
+    const need=TR_SLOTS[it.lvl]||4;
+    if(!Array.isArray(it.slots)||it.slots.length!==need){
+      const old=Array.isArray(it.slots)?it.slots:[];
+      it.slots=new Array(need).fill(null);
+      for(let i=0;i<Math.min(old.length,need);i++)it.slots[i]=old[i];
+    }
+    for(let i=0;i<it.slots.length;i++)it.slots[i]=sanitizeItem(it.slots[i]);
+  }
+  if(it.kind==='tanker'){
+    if(it.liq!==undefined){
+      if(!Array.isArray(it.slots))it.slots=[it.liq||null];
+      delete it.liq;
+    }
+    if(!Array.isArray(it.slots)||it.slots.length!==1)it.slots=[null];
+  }
+  it.n=1;
+  return it;
+}
+function sanitizeTractor(tr){
+  if(tr.front&&(tr.front.t!=='equip'||tr.front.slot!=='front'))tr.front=null;
+  if(tr.rear&&(tr.rear.t!=='equip'||tr.rear.slot!=='rear'))tr.rear=null;
+  if(tr.front)sanitizeItem(tr.front);
+  if(tr.rear)sanitizeItem(tr.rear);
+  if(typeof tr.dx!=='number'){tr.dx=0;tr.dy=1;}
+  if(!tr.face)tr.face=[1,2];
+  if(tr.down===undefined)tr.down=false;
+  tr._trl=null;
+}
+function compactGarage(g){
+  const src=Array.isArray(g)?g.filter(Boolean):[];
+  const out=new Array(GARAGE_SLOTS).fill(null);
+  for(let i=0;i<Math.min(src.length,GARAGE_SLOTS);i++)out[i]=sanitizeItem(src[i])||src[i];
+  return out;
+}
+function loadSave(){
+  try{
+    const j=JSON.parse(localStorage.getItem('khutorok2'));
+    if(!j)return false;
+    if(j.v===4||j.v===5||j.v===6){
+      S={money:j.m,day:j.d,t:j.t,rain:!!j.r,garage:compactGarage(j.gar),tractors:j.tr,soil:{},helpShown:j.hs};
+      for(const tr of S.tractors)sanitizeTractor(tr);
+    }else if(j.v===1||j.v===2||j.v===3){migrateOld(j);}
+    else return false;
+    for(const k in (j.soil||{})){const a=j.soil[k];S.soil[k]={weed:!!a[0],herb:a[1]||0,crop:a[2]?{type:a[2][0],g:a[2][1],watered:!!a[2][2],fert:!!a[2][3]}:null};}
+    return true;
+  }catch(e){return false;}
+}
+function migrateOld(j){
+  S={money:j.m+(j.v<3?100000:0),day:j.d,t:j.t,rain:!!j.r,garage:new Array(GARAGE_SLOTS).fill(null),tractors:[],soil:{},helpShown:j.hs};
+  let gi=0;
+  const gput=it=>{if(gi<GARAGE_SLOTS)S.garage[gi++]=it;};
+  const wh=j.wh||{};
+  for(const c of ['wheat','carrot','pumpkin']){let n=wh[c]||0;while(n>0){const s=Math.min(100,n);gput({t:'seed',crop:c,n:s});n-=s;}}
+  for(const l of ['fert','herb']){let n=wh[l]||0;while(n>0){const s=Math.min(100,n);gput({t:'liq',liq:l,n:s});n-=s;}}
+  const ow=j.ow||{};const pool=[];
+  for(const k of ['seeder','waterer','weeder','header','plow','trailer','tanker'])
+    for(let lv=1;lv<=(ow[k]||1);lv++)pool.push(mkEquip(k,lv));
+  for(const ot of (j.tr||[])){
+    const nt={tid:ot.tid,x:ot.x,y:ot.y,dx:ot.dx||0,dy:ot.dy||1,face:ot.face||[1,2],down:false,front:null,rear:null,_trl:null};
+    if(ot.front){
+      const idx=pool.findIndex(p=>p.slot==='front'&&p.kind===ot.front);
+      nt.front=idx>=0?pool.splice(idx,1)[0]:mkEquip(ot.front,ow[ot.front]||1);
+    }
+    if(ot.rear){
+      const idx=pool.findIndex(p=>p.slot==='rear'&&p.kind===ot.rear);
+      const it=idx>=0?pool.splice(idx,1)[0]:mkEquip(ot.rear,ow[ot.rear]||1);
+      if(it.kind==='trailer'&&ot.tr){
+        for(const c of ['wheat','carrot','pumpkin']){
+          let n=(ot.tr.seed&&ot.tr.seed[c])||0;while(n>0){const s=Math.min(100,n);placeIntoTrailer(it,{t:'seed',crop:c,n:s});n-=s;}
+          n=(ot.tr.crop&&ot.tr.crop[c])||0;while(n>0){const s=Math.min(10,n);placeIntoTrailer(it,{t:'crop',crop:c,n:s});n-=s;}
+        }
+      }
+      if(it.kind==='tanker'&&ot.tk){
+        const best=['water','fert','herb'].sort((a,b)=>((ot.tk[b]||0)-(ot.tk[a]||0)))[0];
+        if((ot.tk[best]||0)>0)it.slots=[{t:'liq',liq:best,n:Math.min(ot.tk[best],TANK_CAP[normLvl(it.lvl)]||40)}];
+      }
+      nt.rear=it;
+    }
+    S.tractors.push(nt);
+  }
+  if(!S.tractors.length)S.tractors.push(mkTractor(0,(spawn.x+2)*TS,(spawn.y-3)*TS));
+  for(const p of pool)gput(p);
+}
+function placeIntoTrailer(tl,item){
+  for(let i=0;i<tl.slots.length&&item.n>0;i++){
+    const ex=tl.slots[i];
+    if(ex&&sameStack(ex,item)){const add=Math.min(item.n,stackCap(ex)-ex.n);ex.n+=add;item.n-=add;}
+  }
+  for(let i=0;i<tl.slots.length&&item.n>0;i++){
+    if(!tl.slots[i]){const put=Math.min(item.n,stackCap(item));tl.slots[i]=cloneItem(item,put);item.n-=put;}
+  }
+  return item.n<=0;
+}
+
+/* ================= МИР ================= */
+function isWaterTile(tx,ty){
+  if(tx<0||ty<0||tx>=MW||ty>=MH)return true;
+  return mapL1[ty*MW+tx]===WATER_GID;
+}
+function isFieldTile(tx,ty){return tx>=0&&ty>=0&&tx<MW&&ty<MH&&mapL1[ty*MW+tx]===FIELD_GID;}
+function waterNear(x,y,r){
+  const tx0=Math.floor((x-r)/TS),tx1=Math.floor((x+r)/TS),ty0=Math.floor((y-r)/TS),ty1=Math.floor((y+r)/TS);
+  for(let ty=ty0;ty<=ty1;ty++)for(let tx=tx0;tx<=tx1;tx++){
+    if(tx<0||ty<0||tx>=MW||ty>=MH)continue;
+    if(mapL1[ty*MW+tx]===WATER_GID)return true;
+  }
+  return false;
+}
+function findSpawn(){
+  let best=null,bd=1e18;
+  for(let y=16;y<MH-16;y+=2)for(let x=16;x<MW-16;x+=2){
+    if(mapL1[y*MW+x]===grassGid&&mapL2[y*MW+x]===0){
+      const d=(x-64)*(x-64)+(y-64)*(y-64);
+      if(d<bd){bd=d;best={x,y};}
+    }
+  }
+  if(best)spawn=best;
+}
+function spotHasWater(tx,ty,w,h){
+  if(tx<1||ty<1||tx+w>MW-1||ty+h>MH-1)return true;
+  for(let y=ty;y<ty+h;y++)for(let x=tx;x<tx+w;x++)if(mapL1[y*MW+x]===WATER_GID)return true;
+  return false;
+}
+function findDrySpot(tx,ty,w,h){
+  if(!spotHasWater(tx,ty,w,h))return{tx,ty};
+  for(let r=1;r<48;r++){
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;
+      const nx=tx+dx,ny=ty+dy;
+      if(nx<1||ny<1||nx+w>MW-1||ny+h>MH-1)continue;
+      if(!spotHasWater(nx,ny,w,h))return{tx:nx,ty:ny};
+    }
+  }
+  return{tx,ty};
+}
+function setupWorld(){
+  const sx=spawn.x,sy=spawn.y;
+  const clampT=(v,w)=>Math.max(1,Math.min(MW-w-1,v));
+  const defs=[
+    {id:'barn',name:'Амбар',tx:clampT(sx-13,7),ty:clampT(sy-11,6),w:7,h:6,type:'barn'},
+    {id:'garage',name:'Гараж',tx:clampT(sx+4,5),ty:clampT(sy-10,5),w:5,h:5,type:'garage'},
+    {id:'shopA',name:'Сельхозапгрейд',tx:clampT(sx+42,6),ty:clampT(sy-9,5),w:6,h:5,type:'shopA'},
+    {id:'shopF',name:'Всё для фермера',tx:clampT(sx+52,6),ty:clampT(sy-9,5),w:6,h:5,type:'shopF'},
+    {id:'dealer',name:'Твой первый трактор',tx:clampT(sx+42,8),ty:clampT(sy,6),w:8,h:6,type:'dealer'}
+  ];
+  buildings=[];
+  for(const d of defs){
+    const sp=findDrySpot(d.tx,d.ty,d.w,d.h);
+    d.tx=sp.tx;d.ty=sp.ty;
+    d.img=bldCanvas(d.type,d.w*TS,d.h*TS);
+    buildings.push(d);
+  }
+  const clear=(x0,y0,w,h)=>{
+    for(let yy=y0-1;yy<=y0+h;yy++)for(let xx=x0-1;xx<=x0+w;xx++){if(xx>=0&&yy>=0&&xx<MW&&yy<MH)mapL2[yy*MW+xx]=0;}
+    refreshTerrainRect(x0-1,y0-1,w+2,h+2);
+  };
+  for(const b of buildings)clear(b.tx,b.ty,b.w,b.h);
+}
+function zoneOf(b){return{x:(b.tx+b.w/2)*TS,y:(b.ty+b.h+1.1)*TS,r:2.8*TS};}
+function nearGarage(){
+  const g=buildings.find(b=>b.id==='garage');if(!g)return false;
+  const p=playerEnt(),zz=zoneOf(g);
+  return Math.hypot(p.x-zz.x,p.y-zz.y)<zz.r+TS*2.5;
+}
+function findParkingSpot(){
+  const d=buildings.find(b=>b.id==='dealer');
+  for(let row=1;row<=7;row++){
+    for(let col=-1;col<=d.w;col++){
+      const px=(d.tx+col)*TS+8,py=(d.ty+d.h+row)*TS+8;
+      const probe={x:px,y:py};
+      if(hitSolid(probe,13,10))continue;
+      let clash=false;
+      for(const t2 of S.tractors)if(Math.hypot(t2.x-px,t2.y-py)<30)clash=true;
+      if(!clash)return{x:px,y:py};
+    }
+  }
+  return{x:(d.tx+d.w/2)*TS,y:(d.ty+d.h+2.5)*TS};
+}
+function hitBld(e,hw,hh){
+  for(const b of buildings){
+    const bx=b.tx*TS,by=b.ty*TS,bw=b.w*TS,bh=b.h*TS;
+    if(e.x+hw>bx&&e.x-hw<bx+bw&&e.y+hh>by&&e.y-hh<by+bh)return true;
+  }
+  return false;
+}
+function hitWater(e,hw,hh){
+  return isWaterTile(Math.floor((e.x-hw)/TS),Math.floor((e.y-hh)/TS))||
+         isWaterTile(Math.floor((e.x+hw)/TS),Math.floor((e.y-hh)/TS))||
+         isWaterTile(Math.floor((e.x-hw)/TS),Math.floor((e.y+hh)/TS))||
+         isWaterTile(Math.floor((e.x+hw)/TS),Math.floor((e.y+hh)/TS));
+}
+function hitSolid(e,hw,hh){return hitBld(e,hw,hh)||hitWater(e,hw,hh);}
+function moveEnt(e,dx,dy,hw,hh){
+  e.x+=dx;if(hitSolid(e,hw,hh))e.x-=dx;
+  e.y+=dy;if(hitSolid(e,hw,hh))e.y-=dy;
+  e.x=Math.max(10,Math.min(MW*TS-10,e.x));
+  e.y=Math.max(10,Math.min(MH*TS-10,e.y));
+}
+
+/* ================= ТРАКТОР/ГРУЗ ================= */
+function stats(tr){
+  const hp=TRACTORS[tr.tid].hp;let use=0;
+  if(tr.front)use+=eqPower(tr.front);
+  if(tr.rear)use+=eqPower(tr.rear);
+  const rem=hp-use;
+  const maxK=rem<60?Math.max(5,rem):60;
+  return{rem,maxK};
+}
+function trailerOf(tr){return (tr.rear&&tr.rear.kind==='trailer')?tr.rear:null;}
+function tankerOf(tr){return (tr.rear&&tr.rear.kind==='tanker')?tr.rear:null;}
+function tankLiq(tr){const tk=tankerOf(tr);return (tk&&tk.slots&&tk.slots[0])?tk.slots[0]:null;}
+function takeSeed(tr,crop){
+  const tl=trailerOf(tr);if(!tl)return false;
+  for(let i=0;i<tl.slots.length;i++){
+    const it=tl.slots[i];
+    if(it&&it.t==='seed'&&it.crop===crop&&it.n>0){it.n--;if(it.n<=0)tl.slots[i]=null;return true;}
+  }
+  return false;
+}
+function takeLiquid(tr,liq){
+  const tk=tankerOf(tr);
+  if(!tk||!tk.slots[0]||tk.slots[0].liq!==liq||tk.slots[0].n<=0)return false;
+  tk.slots[0].n--;if(tk.slots[0].n<=0)tk.slots[0]=null;
+  return true;
+}
+function addCropToTrailer(tr,crop,n){
+  const tl=trailerOf(tr);if(!tl)return 0;
+  const item={t:'crop',crop,n};
+  let placed=0;
+  for(let i=0;i<tl.slots.length&&item.n>0;i++){
+    const ex=tl.slots[i];
+    if(ex&&sameStack(ex,item)){const add=Math.min(item.n,STACK.crop-ex.n);ex.n+=add;item.n-=add;placed+=add;}
+  }
+  for(let i=0;i<tl.slots.length&&item.n>0;i++){
+    if(!tl.slots[i]){const put=Math.min(item.n,STACK.crop);tl.slots[i]={t:'crop',crop,n:put};item.n-=put;placed+=put;}
+  }
+  return placed;
+}
+function countSeedsIn(tr,crop){
+  const tl=trailerOf(tr);if(!tl)return 0;let n=0;
+  for(const it of tl.slots)if(it&&it.t==='seed'&&(!crop||it.crop===crop))n+=it.n;
+  return n;
+}
+function countLiquidIn(tr,liq){const l=tankLiq(tr);return (l&&l.liq===liq)?l.n:0;}
+function countSeedsEverywhere(crop){
+  let n=0;
+  const scan=arr=>{for(const it of arr)if(it&&it.t==='seed'&&(!crop||it.crop===crop))n+=it.n;};
+  scan(S.garage);
+  for(const tr of S.tractors){const tl=trailerOf(tr);if(tl)scan(tl.slots);}
+  return n;
+}
+
+/* ================= ФИЗИКА ПРИЦЕПА ================= */
+function hitchPoint(tr){
+  const dv=dvec(tr);
+  return{x:tr.x-dv[0]*HITCH_BACK,y:tr.y-dv[1]*HITCH_BACK,ang:Math.atan2(dv[1],dv[0])};
+}
+function initTrailer(tr){
+  const h=hitchPoint(tr);
+  tr._trl={x:h.x-Math.cos(h.ang)*TRAILER_L,y:h.y-Math.sin(h.ang)*TRAILER_L,ang:h.ang};
+}
+function updateTrailer(tr){
+  const r=tr.rear;
+  if(!r||(r.kind!=='trailer'&&r.kind!=='tanker')){tr._trl=null;return;}
+  if(!tr._trl){initTrailer(tr);return;}
+  const h=hitchPoint(tr);
+  const t=tr._trl;
+  let vx=h.x-t.x, vy=h.y-t.y;
+  const d=Math.hypot(vx,vy);
+  if(d<0.0001)return;
+  const nx=vx/d, ny=vy/d;
+  t.x=h.x-nx*TRAILER_L;
+  t.y=h.y-ny*TRAILER_L;
+  const target=Math.atan2(ny,nx);
+  let diff=target-t.ang;
+  while(diff>Math.PI)diff-=2*Math.PI;
+  while(diff<-Math.PI)diff+=2*Math.PI;
+  t.ang+=diff*TRAILER_ANG_SM;
+}
+
+/* ================= ВРЕМЯ/ПОГОДА ================= */
+function newDay(){
+  S.day++;
+  for(const k in S.soil){
+    const s=S.soil[k];
+    if(s.crop){
+      if(s.crop.watered&&!s.weed)s.crop.g++;
+      s.crop.watered=false;
+    }
+    if(s.herb>0)s.herb--;
+    if(s.herb<=0){
+      if(s.crop&&Math.random()<0.25)s.weed=true;
+      else if(!s.crop&&Math.random()<0.08)s.weed=true;
+    }
+  }
+  S.rain=Math.random()<0.25;
+  if(S.rain){for(const k in S.soil)if(S.soil[k].crop)S.soil[k].crop.watered=true;}
+  toast('🌅 Наступил день '+S.day+(S.rain?' — идёт дождь, грядки политы!':''));
+  save();
+}
+function darkness(){
+  const h=(S.t/HOUR_SEC)%24;
+  if(h>=21||h<5)return .55;
+  if(h<7)return .55*(7-h)/2;
+  if(h>=19)return .55*(h-19)/2;
+  return 0;
+}
+
+/* ================= РАБОТА НАВЕСНОГО ================= */
+function widthOffsets(lvl){const l=normLvl(lvl);return l>=3?[-1,0,1]:l===2?[0,1]:[0];}
+function workTiles(x0,y0,x1,y1,cb){
+  const dist=Math.hypot(x1-x0,y1-y0);
+  const steps=Math.min(80,Math.max(1,Math.ceil(dist/6)));
+  const seen=new Set();
+  for(let s=0;s<=steps;s++){
+    const tx=Math.floor((x0+(x1-x0)*s/steps)/TS);
+    const ty=Math.floor((y0+(y1-y0)*s/steps)/TS);
+    const k=ty*MW+tx;
+    if(seen.has(k))continue;
+    seen.add(k);
+    cb(tx,ty);
+  }
+}
+function doWork(dt){
+  if(riding===null)return;
+  const tr=S.tractors[riding];
+  if(!tr.down)return;
+  const f=tr.front,r=tr.rear;
+  if(!f&&!(r&&r.kind==='plow'))return;
+  if(speedNow<8)return;
+  const dv=dvec(tr),dx=dv[0],dy=dv[1];
+  const pp=perpDir(dx,dy),perpx=pp[0],perpy=pp[1];
+  if(f){
+    const offs=widthOffsets(f.lvl);
+    const px=tr.x+dx*28,py=tr.y+dy*28;
+    if(tr._fx===undefined||Math.hypot(px-tr._fx,py-tr._fy)>120){tr._fx=px;tr._fy=py;}
+    workTiles(tr._fx,tr._fy,px,py,(tx,ty)=>{for(const o of offs)applyFront(tr,tx+perpx*o,ty+perpy*o);});
+    tr._fx=px;tr._fy=py;
+  }
+  if(r&&r.kind==='plow'){
+    const offs=widthOffsets(r.lvl);
+    const px=tr.x-dx*28,py=tr.y-dy*28;
+    if(tr._rx===undefined||Math.hypot(px-tr._rx,py-tr._ry)>120){tr._rx=px;tr._ry=py;}
+    workTiles(tr._rx,tr._ry,px,py,(tx,ty)=>{for(const o of offs)applyPlow(tx+perpx*o,ty+perpy*o);});
+    tr._rx=px;tr._ry=py;
+  }
+}
+function applyPlow(tx,ty){
+  tx=Math.floor(tx);ty=Math.floor(ty);
+  if(!isFieldTile(tx,ty))return;
+  const k=key(tx,ty);
+  if(!S.soil[k]){S.soil[k]={weed:false,herb:0,crop:null};dirt(tx*TS+8,ty*TS+8);}
+}
+function applyFront(tr,tx,ty){
+  tx=Math.floor(tx);ty=Math.floor(ty);
+  if(tx<0||ty<0||tx>=MW||ty>=MH)return;
+  const k=key(tx,ty),s=S.soil[k];
+  if(!s)return;
+  const f=tr.front;
+  if(f.kind==='weeder'){
+    if(s.weed){s.weed=false;leaf(tx*TS+8,ty*TS+8);}
+  }else if(f.kind==='seeder'){
+    if(!s.crop&&!s.weed){
+      if(takeSeed(tr,selCrop)){
+        s.crop={type:selCrop,g:0,watered:false,fert:false};
+        leaf(tx*TS+8,ty*TS+8);sfx(660,.05);
+      }else toastOnce('⚠️ В прицепе нет семян: '+CROPS[selCrop].name);
+    }
+  }else if(f.kind==='waterer'){
+    if(selMode==='water'){
+      if(s.crop&&!s.crop.watered){
+        if(takeLiquid(tr,'water')){s.crop.watered=true;dropFx(tx*TS+8,ty*TS+8);}
+        else toastOnce('⚠️ В цистерне нет воды');
+      }
+    }else if(selMode==='fert'){
+      if(s.crop&&!s.crop.fert){
+        if(takeLiquid(tr,'fert')){s.crop.fert=true;}
+        else toastOnce('⚠️ В цистерне нет удобрений');
+      }
+    }else if(selMode==='herb'){
+      if(s.herb<=0){
+        if(takeLiquid(tr,'herb')){s.herb=14;s.weed=false;}
+        else toastOnce('⚠️ В цистерне нет гербицида');
+      }
+    }
+  }else if(f.kind==='header'){
+    if(s.crop){
+      const C=CROPS[s.crop.type];
+      if(s.crop.g>=C.days){
+        if(!trailerOf(tr)){toastOnce('⚠️ Жатке нужен прицеп на фаркопе!');return;}
+        const bonus=Math.ceil(C.yld*(s.crop.fert?1.5:1));
+        const placed=addCropToTrailer(tr,s.crop.type,bonus);
+        if(placed<=0){toastOnce('⚠️ В прицепе нет места!');return;}
+        floats.push({x:tx*TS+8,y:ty*TS,t:'+'+placed+C.icon,life:1.4,col:0xffe9a8,el:null});
+        s.crop=null;s.weed=false;
+        sfx(880,.06);
+      }
+    }
+  }
+}
+
+/* ================= КОНТЕЙНЕРЫ ИНВЕНТАРЯ ================= */
+let CONTS={},otherIdx=-1;
+function capFor(c,i,item){
+  if(!c||!item)return 0;
+  if(c.kind==='eqslot')return(item.t==='equip'&&item.slot===c.slot)?1:0;
+  if(c.kind==='offer')return 0;
+  if(c.kind==='basket')return 1;
+  if(c.kind==='split')return 0;
+  const ex=cSlot(c,i);
+  if(c.accept&&!c.accept(item,ex))return 0;
+  if(c.capFn)return c.capFn(item,ex);
+  return stackCap(item);
+}
+function dropReason(c){return c.why||'Сюда нельзя положить';}
+function findOtherTractorNear(){
+  const p=playerEnt();
+  for(let i=0;i<S.tractors.length;i++){
+    if(i===riding)continue;
+    const tr=S.tractors[i];
+    if(Math.hypot(p.x-tr.x,p.y-tr.y)<4.2*TS&&tr.rear&&(tr.rear.kind==='trailer'||tr.rear.kind==='tanker'))return i;
+  }
+  return -1;
+}
+function addStorageConts(tr,pref){
+  if(tr.rear&&tr.rear.kind==='trailer')
+    CONTS[pref+'_trailer']={
+      kind:'grid',arr:tr.rear.slots,
+      accept:it=>it.t!=='liq'&&!(it.t==='equip'&&(it.kind==='trailer'||it.kind==='tanker')),
+      why:'Прицеп не возит жидкости, прицепы и цистерны',
+      label:`📦 Прицеп • ${TRACTORS[tr.tid].name} (${tr.rear.slots.length} сл., ур.${normLvl(tr.rear.lvl)})`
+    };
+  if(tr.rear&&tr.rear.kind==='tanker'){
+    const cap=TANK_CAP[normLvl(tr.rear.lvl)]||40;
+    CONTS[pref+'_tanker']={
+      kind:'grid',arr:tr.rear.slots,tank:true,
+      accept:(it,ex)=>it.t==='liq'&&(!ex||ex.liq===it.liq),
+      capFn:()=>cap,
+      why:'Цистерна: только жидкость, без смешивания',
+      label:`🛢 Цистерна • ${TRACTORS[tr.tid].name} (${cap} л, 1 слот)`
+    };
+  }
+}
+function ensureConts(){
+  CONTS={};otherIdx=-1;
+  if(nearGarage())CONTS.garage={kind:'grid',arr:S.garage,label:'🔧 Гараж (4×8) — хранится всё, включая жидкости'};
+  if(riding!==null){
+    const tr=S.tractors[riding];
+    CONTS.t_front={kind:'eqslot',slot:'front',arr:[null],get:()=>tr.front,set:v=>{tr.front=v;tr._fx=undefined;},why:'Сюда — только переднее навесное'};
+    CONTS.t_rear={kind:'eqslot',slot:'rear',arr:[null],get:()=>tr.rear,set:v=>{tr.rear=v;tr._rx=undefined;tr._trl=null;},why:'Сюда — только прицепное (фаркоп)'};
+    addStorageConts(tr,'t');
+  }
+  otherIdx=findOtherTractorNear();
+  if(otherIdx>=0)addStorageConts(S.tractors[otherIdx],'o');
+}
+function cSlot(c,i){
+  if(!c)return null;
+  if(c.kind==='eqslot')return c.get()||null;
+  if(c.kind==='offer')return curOffers[i]||null;
+  if(c.kind==='basket')return BASKET;
+  if(c.kind==='split')return null;
+  return c.arr[i]||null;
+}
+function cSet(c,i,v){
+  if(c.kind==='eqslot'){c.set(v);return;}
+  if(c.kind==='offer'){curOffers[i]=v;return;}
+  if(c.kind==='basket'){BASKET=v;return;}
+  if(c.kind==='split')return;
+  c.arr[i]=v;
+}
+function cLen(c){
+  if(!c)return 0;
+  if(c.kind==='eqslot'||c.kind==='basket'||c.kind==='split')return 1;
+  if(c.kind==='offer')return curOffers.length;
+  return c.arr.length;
+}
+function countSpace(item,list){
+  let sp=0;
+  for(const c of list){
+    const len=cLen(c);
+    for(let i=0;i<len;i++){
+      const ex=cSlot(c,i);
+      const cap=capFor(c,i,item);
+      if(cap<=0)continue;
+      if(!ex)sp+=cap;
+      else if(sameStack(ex,item))sp+=Math.max(0,cap-ex.n);
+    }
+  }
+  return sp;
+}
+function placeItem(item,list){
+  for(const c of list){
+    const len=cLen(c);
+    for(let i=0;i<len&&item.n>0;i++){
+      const ex=cSlot(c,i);
+      const cap=capFor(c,i,item);
+      if(cap<=0)continue;
+      if(!ex){const put=Math.min(item.n,cap);cSet(c,i,cloneItem(item,put));item.n-=put;}
+      else if(sameStack(ex,item)){const add=Math.min(item.n,cap-ex.n);if(add>0){ex.n+=add;item.n-=add;}}
+    }
+  }
+  return item.n;
+}
+
+/* ================= ИНВЕНТАРЬ: DND ================= */
+let HELD=null,heldFrom=null,heldOffer=null,dragging=false,handledInDown=false,downXY=null,lastPtr={x:0,y:0},invMode=null,curOffers=[];
+const modalWrap=$('modalWrap');
+const modalEl=$('modal');
+const modalEI=modalEl;
+const heldEl=$('heldEl');
+const tipEl=$('tip');
+let tipTO=null;
+function updateHeldEl(){
+  if(HELD){heldEl.innerHTML=`<div class="slot ${slotCls(HELD)}">${itemHTML(HELD)}</div>`;heldEl.style.display='block';}
+  else{heldEl.innerHTML='';heldEl.style.display='none';}
+}
+function showHeldAt(x,y){
+  if(!HELD){updateHeldEl();return;}
+  heldEl.style.left=x+'px';heldEl.style.top=y+'px';
+  updateHeldEl();
+}
+function showTip(html,x,y){
+  if(!html){hideTip();return;}
+  tipEl.innerHTML=html;tipEl.style.display='block';
+  moveTip(x,y);
+}
+function moveTip(x,y){
+  const w=tipEl.offsetWidth,h=tipEl.offsetHeight;
+  let lx=x+16,ly=y+20;
+  if(lx+w>innerWidth-6)lx=x-w-12;
+  if(ly+h>innerHeight-6)ly=y-h-12;
+  tipEl.style.left=Math.max(4,lx)+'px';
+  tipEl.style.top=Math.max(4,ly)+'px';
+}
+function hideTip(){tipEl.style.display='none';clearTimeout(tipTO);}
+function descForSlot(sl){
+  if(sl.dataset.sell)return'💰 <b>Продать оборудование</b><br>Перетащите предмет сюда — получите 50% его стоимости.';
+  if(sl.dataset.basket)return'🧺 <b>Корзина</b><br>Временное хранилище одного предмета. Очищается при закрытии инвентаря.';
+  if(sl.dataset.split)return'½ <b>Разделить стак</b><br>Перетащите стак сюда (или возьмите в руку и нажмите ½) — он разделится на два: половина останется в руке, половина вернётся в исходный слот. Общее количество предметов не меняется.';
+  const c=CONTS[sl.dataset.c];if(!c)return'';
+  if(c.kind==='offer'){const o=curOffers[+sl.dataset.i];return o?offerDesc(o):'';}
+  const it=cSlot(c,+sl.dataset.i);
+  return it?itemDesc(it):'';
+}
+function patchSlotEl(sl){
+  if(!sl)return;
+  const c=CONTS[sl.dataset.c];if(!c)return;
+  const i=+sl.dataset.i,it=cSlot(c,i);
+  sl.className='slot '+(it?slotCls(it):'')+(c.kind==='eqslot'?' eq':'')+(c.kind==='offer'?' offer':'')+(c.kind==='basket'?' basket':'')+(c.kind==='split'?' split':'');
+  sl.innerHTML=slotInner(c,i);
+}
+function refreshHeldBar(){
+  const bar=modalEl.querySelector('.invtop');
+  if(bar)bar.outerHTML=heldBarHTML(invMode==='inv');
+}
+function refreshUI(){refreshHeldBar();updateHeldEl();updateChips(true);save();}
+function pickUp(c,i){
+  const it=cSlot(c,i);
+  if(!it)return;
+  HELD=it;cSet(c,i,null);
+  sfx(500,.04);
+}
+function pickUpHalf(c,i){
+  const it=cSlot(c,i);
+  if(!it)return;
+  if(it.t!=='equip'&&it.n>1){
+    const take=Math.ceil(it.n/2);
+    HELD=cloneItem(it,take);
+    it.n-=take;
+  }else{
+    HELD=it;cSet(c,i,null);
+  }
+  sfx(540,.04);
+}
+function splitHeldStack(){
+  if(!HELD||heldOffer){toast('Возьмите стак в руку');sfx(160,.08);return;}
+  if(HELD.t==='equip'){toast('Оборудование нельзя разделить');sfx(160,.08);return;}
+  if(HELD.n<2){toast('Один предмет не делится');sfx(160,.08);return;}
+  const half=Math.floor(HELD.n/2);
+  const piece=cloneItem(HELD,half);
+  const targets=[];
+  const c0=heldFrom?CONTS[heldFrom.ck]:null;
+  if(c0){
+    targets.push({c:c0,i:heldFrom.i});
+    for(let i=0;i<cLen(c0);i++)targets.push({c:c0,i});
+  }
+  for(const k in CONTS){
+    const c=CONTS[k];
+    if(c.kind==='grid')for(let i=0;i<cLen(c);i++)targets.push({c,i});
+  }
+  for(const t of targets){
+    const ex=cSlot(t.c,t.i);
+    const cap=capFor(t.c,t.i,piece);
+    if(cap<=0)continue;
+    if(!ex){cSet(t.c,t.i,piece);HELD.n-=half;sfx(480,.05);afterChange();return;}
+    if(sameStack(ex,piece)&&cap-ex.n>=half){ex.n+=half;HELD.n-=half;sfx(480,.05);afterChange();return;}
+  }
+  toast('Нет свободного слота для второго стака');sfx(160,.08);
+}
+function sellHeld(){
+  if(!HELD){toast('Сначала возьмите оборудование в руку');return;}
+  if(HELD.t!=='equip'){toast('Здесь можно продать только оборудование');sfx(160,.12);return;}
+  if(HELD.kind==='trailer'&&HELD.slots.some(x=>x)){toast('Сначала освободите прицеп');sfx(160,.12);return;}
+  if(HELD.kind==='tanker'&&HELD.slots[0]){toast('Сначала освободите цистерну');sfx(160,.12);return;}
+  const nm=itemName(HELD);
+  const price=Math.floor(equipPrice(HELD)/2);
+  S.money+=price;HELD=null;heldFrom=null;
+  sfxCoin();toast(`💰 Продано: ${nm} за ${price} монет`);
+  afterChange();
+}
+function pickUpOffer(oi,x,y){
+  const o=curOffers[oi];if(!o)return;
+  if(S.money<o.price){sfx(160,.15);toast('Недостаточно монет');return;}
+  HELD=o.make();heldOffer={oi};heldFrom=null;
+  sfx(500,.04);
+  showHeldAt(x,y);
+  refreshHeldBar();
+}
+function cancelOffer(){
+  if(!heldOffer)return;
+  HELD=null;heldOffer=null;
+  updateHeldEl();refreshHeldBar();
+}
+function buyIntoSlot(c,i){
+  const o=heldOffer?curOffers[heldOffer.oi]:null;
+  if(!o||!HELD){cancelOffer();return false;}
+  if(S.money<o.price){sfx(160,.15);toast('Недостаточно монет');return false;}
+  const item=HELD;
+  if(c.kind==='eqslot'){
+    if(item.t!=='equip'){sfx(160,.08);toast('Семена и жидкости нельзя купить в слот оборудования — перетащите в прицеп/цистерну/гараж');return false;}
+    if(item.slot!==c.slot){sfx(160,.08);toast(item.slot==='front'?'Это переднее навесное — перетащите в слот «перед»':'Это прицепное — перетащите в слот «фаркоп»');return false;}
+    if(cSlot(c,0)){sfx(160,.08);toast('Слот трактора занят — снимите старое оборудование (его можно продать слотом 💰)');return false;}
+    S.money-=o.price;
+    cSet(c,0,item);
+  }else if(c.kind==='grid'){
+    if(item.t==='equip'){sfx(160,.08);toast('Оборудование покупается только в свободный слот трактора (перед/фаркоп)');return false;}
+    const cap=capFor(c,i,item);
+    if(cap<=0){sfx(160,.08);toast(dropReason(c));return false;}
+    const ex=cSlot(c,i);
+    if(ex&&!sameStack(ex,item)){sfx(160,.08);toast('Слот занят другим предметом');return false;}
+    const free=ex?cap-ex.n:cap;
+    if(free<item.n){sfx(160,.08);toast(`Не хватает места: нужно ${item.n}, свободно ${free}`);return false;}
+    S.money-=o.price;
+    if(ex)ex.n+=item.n;else cSet(c,i,cloneItem(item,item.n));
+  }else{sfx(160,.08);toast('Сюда купить нельзя');return false;}
+  sfxCoin();toast('Куплено: '+o.name);
+  HELD=null;heldOffer=null;
+  afterChange();
+  return true;
+}
+function dropHeld(c,i,half,slEl){
+  if(!HELD||heldOffer)return false;
+  const ex=cSlot(c,i);
+  const cap=capFor(c,i,HELD);
+  if(cap<=0){sfx(160,.08);toastOnce(dropReason(c));return false;}
+  let amount=HELD.n;
+  if(half&&HELD.t!=='equip')amount=Math.ceil(HELD.n/2);
+  let ok=false;
+  if(!ex){const put=Math.min(amount,cap);cSet(c,i,cloneItem(HELD,put));HELD.n-=put;sfx(600,.04);ok=true;}
+  else if(sameStack(ex,HELD)){
+    const add=Math.min(amount,Math.max(0,cap-ex.n),HELD.n);
+    if(add<=0){sfx(160,.08);toastOnce('Стак полон');return false;}
+    ex.n+=add;HELD.n-=add;sfx(600,.04);ok=true;
+  }else{
+    if(amount<HELD.n){sfx(160,.08);toastOnce('Слот занят');return false;}
+    if(c.tank){sfx(160,.08);toastOnce(dropReason(c));return false;}
+    cSet(c,i,cloneItem(HELD,HELD.n));
+    HELD=cloneItem(ex,ex.n);
+    sfx(520,.05);ok=true;
+  }
+  if(HELD&&HELD.n<=0)HELD=null;
+  if(!ok)return false;
+  if(c.kind==='eqslot')afterChange();
+  else{if(slEl)patchSlotEl(slEl);refreshUI();}
+  return true;
+}
+function returnHeld(){
+  if(!HELD)return;
+  if(heldOffer){HELD=null;heldOffer=null;updateHeldEl();return;}
+  const it=HELD;HELD=null;
+  const c=heldFrom?CONTS[heldFrom.ck]:null;
+  if(c&&!cSlot(c,heldFrom.i)&&capFor(c,heldFrom.i,it)>0){cSet(c,heldFrom.i,it);}
+  else{
+    const lists=[];
+    if(CONTS.t_trailer)lists.push(CONTS.t_trailer);
+    lists.push({kind:'grid',arr:S.garage});
+    placeItem(it,lists);
+  }
+  updateHeldEl();
+}
+function afterChange(){
+  const st=modalEl.scrollTop;
+  if(invMode==='inv')renderInv();
+  else if(invMode==='shopA'||invMode==='shopF')renderShop(invMode);
+  modalEl.scrollTop=st;
+  updateHeldEl();updateChips(true);save();
+}
+function slotIsValidTarget(sl){
+  return !!(sl&&(sl.dataset.c!==undefined||sl.dataset.sell||sl.dataset.basket||sl.dataset.split));
+}
+function findNearestSlot(x,y,filter){
+  const slots=modalEl.querySelectorAll('.slot');
+  let best=null,bestDist=1e9;
+  for(const sl of slots){
+    if(!filter(sl))continue;
+    const r=sl.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const d=Math.hypot(x-cx,y-cy);
+    if(d<bestDist){bestDist=d;best=sl;}
+  }
+  return best;
+}
+function dropAtPoint(x,y,fallbackToSource){
+  const el=document.elementFromPoint(x,y);
+  let sl=el&&el.closest?el.closest('.slot'):null;
+  if(!slotIsValidTarget(sl)&&!heldOffer){
+    sl=findNearestSlot(x,y,s=>{
+      if(s.dataset.sell||s.dataset.basket||s.dataset.split)return true;
+      if(s.dataset.c===undefined)return false;
+      const c=CONTS[s.dataset.c];
+      if(!c||c.kind==='offer')return false;
+      if(!HELD)return true;
+      return capFor(c,+s.dataset.i,HELD)>0;
+    });
+  }
+  if(!slotIsValidTarget(sl)){
+    if(heldOffer){cancelOffer();return true;}
+    if(fallbackToSource&&heldFrom&&HELD){
+      const c0=CONTS[heldFrom.ck];
+      if(c0&&!cSlot(c0,heldFrom.i)&&capFor(c0,heldFrom.i,HELD)>0){
+        cSet(c0,heldFrom.i,HELD);HELD=null;heldFrom=null;sfx(520,.05);refreshUI();return true;
+      }
+    }
+    return false;
+  }
+  if(sl.dataset.sell){if(heldOffer){cancelOffer();return true;}sellHeld();return true;}
+  if(sl.dataset.basket){
+    if(heldOffer){cancelOffer();return true;}
+    if(BASKET){toast('Корзина занята');return false;}
+    if(HELD){BASKET=HELD;HELD=null;heldFrom=null;sfx(520,.05);refreshUI();return true;}
+    return false;
+  }
+  if(sl.dataset.split){if(heldOffer){cancelOffer();return true;}splitHeldStack();return true;}
+  const c=CONTS[sl.dataset.c];if(!c)return false;
+  if(c.kind==='offer'){
+    if(HELD&&!heldOffer){sfx(160,.08);toastOnce('На витрину предметы класть нельзя');}
+    return false;
+  }
+  if(heldOffer)return buyIntoSlot(c,+sl.dataset.i);
+  const i=+sl.dataset.i;
+  if(capFor(c,i,HELD)<=0){
+    const alt=findNearestSlot(x,y,s=>{
+      if(s.dataset.c===undefined)return false;
+      const ac=CONTS[s.dataset.c];
+      if(!ac||ac.kind==='offer')return false;
+      return capFor(ac,+s.dataset.i,HELD)>0;
+    });
+    if(alt&&alt!==sl)return dropHeld(CONTS[alt.dataset.c],+alt.dataset.i,false,alt);
+    if(fallbackToSource&&heldFrom){
+      const c0=CONTS[heldFrom.ck];
+      if(c0&&!cSlot(c0,heldFrom.i)&&capFor(c0,heldFrom.i,HELD)>0){
+        cSet(c0,heldFrom.i,HELD);HELD=null;heldFrom=null;sfx(520,.05);refreshUI();return true;
+      }
+    }
+    sfx(160,.08);toastOnce(dropReason(c));
+    return false;
+  }
+  return dropHeld(c,i,false,sl);
+}
+
+/* ================= РЕНДЕР ИНВЕНТАРЯ (DOM) ================= */
+function slotInner(c,i){
+  if(!c)return'';
+  if(c.kind==='basket')return BASKET?itemHTML(BASKET):'<span class="ph">🧺</span>';
+  if(c.kind==='split')return'<span class="ph">½</span>';
+  const it=cSlot(c,i);
+  if(it)return itemHTML(it);
+  if(c.kind==='eqslot')return`<span class="ph">${c.slot==='front'?'⬆<br>перед':'⬇<br>фаркоп'}</span>`;
+  if(c.tank)return'<span class="ph">🛢</span>';
+  return'';
+}
+function slotsHTML(ck,len,cols){
+  const c=CONTS[ck];if(!c)return'';
+  let h=`<div class="invgrid" style="--cols:${cols}">`;
+  for(let i=0;i<len;i++){
+    const it=cSlot(c,i);
+    h+=`<div class="slot ${it?slotCls(it):''} ${c.kind==='eqslot'?'eq':''}" data-c="${ck}" data-i="${i}">${slotInner(c,i)}</div>`;
+  }
+  return h+'</div>';
+}
+function eqSlotsHTML(){
+  const f0=cSlot(CONTS.t_front,0),r0=cSlot(CONTS.t_rear,0);
+  return `<div class="invgrid" style="--cols:2">
+    <div class="slot eq ${f0?slotCls(f0):''}" data-c="t_front" data-i="0">${slotInner(CONTS.t_front,0)}</div>
+    <div class="slot eq ${r0?slotCls(r0):''}" data-c="t_rear" data-i="0">${slotInner(CONTS.t_rear,0)}</div>
+  </div>`;
+}
+function heldBarHTML(withTools){
+  let heldInfo='';
+  if(HELD){
+    heldInfo=`<div class="slot ${slotCls(HELD)}">${itemHTML(HELD)}</div><span class="heldname">${itemName(HELD)}${HELD.t!=='equip'?' ×'+HELD.n:''}${heldOffer&&curOffers[heldOffer.oi]?` — ${curOffers[heldOffer.oi].price} мон., перетащите в свободный слот`:''}</span>`;
+  }
+  let tools='';
+  if(withTools){
+    tools=`<div class="slot split" data-split="1"><span class="ph">½</span></div>
+    <div class="slot basket" data-basket="1">${BASKET?itemHTML(BASKET):'<span class="ph">🧺</span>'}</div>`;
+  }
+  return`<div class="invtop">${heldInfo}${tools}</div>`;
+}
+function storagePanelsHTML(prefix,gridCols){
+  let h='';
+  const tk=CONTS[prefix+'_trailer'];
+  if(tk){
+    const cols=gridCols?Math.min(gridCols,Math.max(4,tk.arr.length)):(tk.arr.length<=4?4:tk.arr.length<=8?4:6);
+    h+=`<h3>${tk.label}</h3>`+slotsHTML(prefix+'_trailer',tk.arr.length,cols);
+  }
+  const tn=CONTS[prefix+'_tanker'];
+  if(tn)h+=`<h3>${tn.label} — без смешивания</h3>`+slotsHTML(prefix+'_tanker',1,4);
+  return h;
+}
+function renderInv(){
+  invMode='inv';
+  ensureConts();
+  let h='<h2>🎒 Инвентарь</h2>';
+  h+=heldBarHTML(true);
+  if(riding!==null){
+    const tr=S.tractors[riding],st=stats(tr);
+    h+=`<h3>🚜 ${TRACTORS[tr.tid].name} — оборудование <span class="sub">(${st.rem} лс свободно, макс. ${st.maxK} км/ч)</span></h3>`;
+    h+=eqSlotsHTML();
+    h+=storagePanelsHTML('t');
+    if(!tr.rear)h+='<p class="sub" style="text-align:center;margin-bottom:8px">Перетащите прицеп или цистерну в слот «фаркоп», навесное — в «перед»</p>';
+  }else{
+    h+='<p class="sub" style="text-align:center;margin-bottom:8px">Сядьте в трактор, чтобы управлять его слотами оборудования</p>';
+  }
+  if(otherIdx>=0){
+    h+=`<h3>🚜 Рядом трактор «${TRACTORS[S.tractors[otherIdx].tid].name}» — обмен грузом</h3>`;
+    h+=storagePanelsHTML('o');
+  }
+  if(CONTS.garage)h+=`<h3>${CONTS.garage.label}</h3>`+slotsHTML('garage',GARAGE_SLOTS,8);
+  h+='<button class="mclose" data-cmd=\'{"a":"closeInv"}\'>Закрыть</button>';
+  openModalRaw(h);
+}
+function buildOffers(which){
+  const offs=[];
+  if(which==='shopA'){
+    for(const k in FRONT)for(let lv=1;lv<=3;lv++)
+      offs.push({name:`${FRONT[k].name} ур.${lv}`,price:EQPRICE[k][lv-1],icon:equipIcon(k,lv),make:()=>mkEquip(k,lv),n:1,desc:itemDesc(mkEquip(k,lv))});
+    for(const k in REAR)for(let lv=1;lv<=3;lv++)
+      offs.push({name:`${REAR[k].name} ур.${lv}`,price:EQPRICE[k][lv-1],icon:equipIcon(k,lv),make:()=>mkEquip(k,lv),n:1,desc:itemDesc(mkEquip(k,lv))});
+  }else{
+    for(const c of ['wheat','carrot','pumpkin']){
+      offs.push({name:`${CROPS[c].name} ×10`,price:CROPS[c].seed*10,emo:CROPS[c].icon,make:()=>({t:'seed',crop:c,n:10}),n:10,desc:`Семена: ${CROPS[c].name}. Рост ${CROPS[c].days} дн., продажа ${CROPS[c].sell} мон./шт`});
+      offs.push({name:`${CROPS[c].name} ×100`,price:CROPS[c].seed*100,emo:CROPS[c].icon,make:()=>({t:'seed',crop:c,n:100}),n:100,desc:`Семена: ${CROPS[c].name}. Рост ${CROPS[c].days} дн., продажа ${CROPS[c].sell} мон./шт`});
+    }
+    offs.push({name:'Удобрение ×10 л',price:80,emo:'🧪',make:()=>({t:'liq',liq:'fert',n:10}),n:10,desc:'Удобрение: +50% к урожаю. Хранение — цистерна или гараж'});
+    offs.push({name:'Удобрение ×50 л',price:380,emo:'🧪',make:()=>({t:'liq',liq:'fert',n:50}),n:50,desc:'Удобрение: +50% к урожаю. Хранение — цистерна или гараж'});
+    offs.push({name:'Гербицид ×5 л',price:60,emo:'☠️',make:()=>({t:'liq',liq:'herb',n:5}),n:5,desc:'Гербицид: сорняки не растут 14 дней. Хранение — цистерна или гараж'});
+    offs.push({name:'Гербицид ×20 л',price:220,emo:'☠️',make:()=>({t:'liq',liq:'herb',n:20}),n:20,desc:'Гербицид: сорняки не растут 14 дней. Хранение — цистерна или гараж'});
+  }
+  return offs;
+}
+function renderShop(which){
+  invMode=which;
+  ensureConts();
+  curOffers=buildOffers(which);
+  const title=which==='shopA'?'🏪 Сельхозапгрейд':'🏬 Всё для фермера';
+  let h=`<h2>${title}</h2>`;
+  if(which==='shopA'){
+    h+=`<p class="sub" style="margin-bottom:6px">${COIN} ${S.money} монет. <b>Уровни:</b> ширина обработки/вспашки — 1/2/3 тайла, прицеп — 4/8/12 слотов, цистерна — 40/80/150 л; расход мощности растёт с уровнем. <b>Покупка перетаскиванием</b>: возьмите товар с витрины и перенесите в свободный слот трактора (перед/фаркоп). Тап по товару — описание. Старое оборудование можно продать слотом 💰.</p>`;
+  }else{
+    h+=`<p class="sub" style="margin-bottom:6px">${COIN} ${S.money} монет. <b>Покупка перетаскиванием</b>: возьмите товар с витрины и перенесите в слот прицепа/цистерны/гаража. Тап по товару — описание. Нет места или монет — покупка невозможна.</p>`;
+  }
+  h+=heldBarHTML(false);
+  h+=`<div class="invgrid" style="--cols:8">`;
+  for(let oi=0;oi<curOffers.length;oi++){
+    const o=curOffers[oi],poor=S.money<o.price;
+    h+=`<div class="slot offer ${poor?'poor':''}" data-c="offers" data-i="${oi}">
+      ${o.icon?`<img class="ei" src="${o.icon}" draggable="false">`:`<span class="si">${o.emo}</span>`}
+      ${o.n>1?`<span class="bn">×${o.n}</span>`:''}
+      <span class="pr">${o.price}${COIN}</span>
+    </div>`;
+  }
+  h+='</div>';
+  if(which==='shopA'){
+    h+='<h3>Продать оборудование — 50% цены (перетащите предмет в слот)</h3>';
+    h+='<div class="invgrid" style="--cols:1"><div class="slot sell" data-sell="1"><span class="si">💰</span></div></div>';
+  }
+  if(riding!==null){
+    const tr=S.tractors[riding],st=stats(tr);
+    h+=`<h3>🚜 ${TRACTORS[tr.tid].name} — слоты оборудования <span class="sub">(${st.rem} лс свободно)</span></h3>`;
+    h+=eqSlotsHTML();
+  }
+  h+=storagePanelsHTML('t',8);
+  if(otherIdx>=0){
+    h+=`<h3>🚜 Рядом трактор «${TRACTORS[S.tractors[otherIdx].tid].name}» — обмен грузом</h3>`;
+    h+=storagePanelsHTML('o',8);
+  }
+  if(CONTS.garage)h+=`<h3>${CONTS.garage.label}</h3>`+slotsHTML('garage',GARAGE_SLOTS,8);
+  h+='<button class="mclose" data-cmd=\'{"a":"closeInv"}\'>Выйти</button>';
+  openModalRaw(h);
+}
+function openInventory(){heldOffer=null;openModalRaw('');renderInv();}
+function openShop(which){heldOffer=null;openModalRaw('');renderShop(which);}
+function openModalRaw(html){modalEl.innerHTML=html;modalWrap.style.display='flex';modalOpen=true;}
+function closeModal(){modalWrap.style.display='none';modalOpen=false;hideTip();}
+function closeModalInv(){
+  returnHeld();
+  BASKET=null;heldOffer=null;
+  invMode=null;
+  closeModal();
+  updateChips(true);save();
+}
+
+/* ================= СОБЫТИЯ ИНВЕНТАРЯ ================= */
+modalEl.addEventListener('pointerdown',e=>{
+  const sellSl=e.target.closest('.slot.sell');
+  if(sellSl){
+    if(heldOffer){cancelOffer();return;}
+    if(HELD)sellHeld();
+    else toast('Возьмите оборудование в руку и бросьте в слот 💰');
+    return;
+  }
+  const basketSl=e.target.closest('.slot.basket');
+  if(basketSl){
+    if(heldOffer){cancelOffer();return;}
+    if(HELD){
+      if(BASKET){toast('Корзина занята — сначала заберите предмет из неё');sfx(160,.08);}
+      else{BASKET=HELD;HELD=null;heldFrom=null;sfx(520,.05);refreshUI();}
+    }else if(BASKET){HELD=BASKET;BASKET=null;sfx(500,.04);refreshUI();}
+    return;
+  }
+  const splitSl=e.target.closest('.slot.split');
+  if(splitSl){
+    if(heldOffer){cancelOffer();return;}
+    splitHeldStack();
+    return;
+  }
+  const sl=e.target.closest('.slot');
+  if(!sl)return;
+  const isOffer=sl.dataset.c==='offers';
+  downXY={x:e.clientX,y:e.clientY};lastPtr={x:e.clientX,y:e.clientY};
+  dragging=false;handledInDown=false;
+  try{modalEl.setPointerCapture(e.pointerId);}catch(err){}
+  if(isOffer){
+    const oi=+sl.dataset.i,o=curOffers[oi];
+    if(!o)return;
+    e.preventDefault();
+    showTip(offerDesc(o),e.clientX,e.clientY);
+    clearTimeout(tipTO);tipTO=setTimeout(hideTip,2500);
+    if(HELD&&!heldOffer)return;
+    if(HELD&&heldOffer){
+      if(heldOffer.oi===oi)return;
+      pickUpOffer(oi,e.clientX,e.clientY);
+      return;
+    }
+    pickUpOffer(oi,e.clientX,e.clientY);
+    return;
+  }
+  if(sl.dataset.c===undefined)return;
+  e.preventDefault();
+  const c=CONTS[sl.dataset.c];if(!c)return;
+  const i=+sl.dataset.i;
+  const d=descForSlot(sl);
+  if(d){showTip(d,e.clientX,e.clientY);clearTimeout(tipTO);tipTO=setTimeout(hideTip,2000);}
+  if(HELD){
+    handledInDown=true;
+    if(heldOffer)buyIntoSlot(c,i);
+    else dropHeld(c,i,e.shiftKey,sl);
+    return;
+  }
+  if(e.shiftKey)pickUpHalf(c,i);else pickUp(c,i);
+  heldFrom={ck:sl.dataset.c,i};
+  if(HELD){
+    showHeldAt(e.clientX,e.clientY);
+    if(c.kind==='eqslot')afterChange();
+    else{patchSlotEl(sl);refreshUI();}
+  }
+});
+modalEl.addEventListener('contextmenu',e=>e.preventDefault());
+modalEl.addEventListener('pointerover',e=>{
+  if(e.pointerType!=='mouse')return;
+  const sl=e.target.closest('.slot');
+  if(sl){showTip(descForSlot(sl),e.clientX,e.clientY);return;}
+  hideTip();
+});
+modalEl.addEventListener('pointermove',e=>{
+  if(e.pointerType==='mouse'&&tipEl.style.display==='block')moveTip(e.clientX,e.clientY);
+});
+modalWrap.addEventListener('pointerleave',hideTip);
+addEventListener('pointermove',e=>{
+  lastPtr={x:e.clientX,y:e.clientY};
+  if(downXY&&Math.hypot(e.clientX-downXY.x,e.clientY-downXY.y)>9)dragging=true;
+  if(HELD){heldEl.style.left=e.clientX+'px';heldEl.style.top=e.clientY+'px';heldEl.style.display='block';}
+});
+function releaseCap(pid){
+  try{if(modalEl.hasPointerCapture&&modalEl.hasPointerCapture(pid))modalEl.releasePointerCapture(pid);}catch(err){}
+}
+addEventListener('pointerup',e=>{
+  if(HELD&&dragging&&!handledInDown&&modalOpen)dropAtPoint(e.clientX,e.clientY,true);
+  releaseCap(e.pointerId);
+  dragging=false;handledInDown=false;downXY=null;
+});
+addEventListener('pointercancel',e=>{
+  if(HELD&&dragging&&!handledInDown&&modalOpen)dropAtPoint(lastPtr.x,lastPtr.y,true);
+  releaseCap(e.pointerId);
+  dragging=false;handledInDown=false;downXY=null;
+});
+modalEl.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-cmd]');if(!btn)return;
+  let c;try{c=JSON.parse(btn.dataset.cmd);}catch(err){return;}
+  handleCmd(c);
+});
+function handleCmd(c){
+  if(c.a==='closeInv'){closeModalInv();return;}
+  if(c.a==='close'){closeModal();return;}
+  if(c.a==='reset'){localStorage.removeItem('khutorok2');location.reload();return;}
+  if(c.a==='buyTr'){
+    const T=TRACTORS[c.i];
+    if(S.tractors.some(tr=>tr.tid===c.i))return;
+    if(S.money<T.price){sfx(160,.15);return;}
+    S.money-=T.price;
+    const sp=findParkingSpot();
+    S.tractors.push(mkTractor(c.i,sp.x,sp.y));
+    sfxCoin();toast('🚜 Куплен трактор «'+T.name+'»! Припаркован у площадки.');openDealer();save();return;
+  }
+  if(c.a==='sellTr'){
+    const i=c.i;
+    if(S.tractors.length<=1){toast('Последний трактор продать нельзя');sfx(160,.15);return;}
+    if(i===riding){toast('Выйдите из трактора, чтобы продать его');sfx(160,.15);return;}
+    const tr=S.tractors[i];if(!tr)return;
+    if(tr.front||tr.rear){toast('Снимите всё оборудование с трактора перед продажей');sfx(160,.15);return;}
+    const T=TRACTORS[tr.tid];
+    if(T.price<=0){toast('Этот трактор нельзя продать');sfx(160,.15);return;}
+    const refund=Math.floor(T.price/2);
+    S.tractors.splice(i,1);
+    if(i<riding)riding--;
+    S.money+=refund;sfxCoin();
+    toast(`💰 Трактор «${T.name}» продан за ${refund} монет`);
+    openDealer();save();return;
+  }
+}
+function thumbStyle(tid){
+  const im=IMG[TRACTORS[tid].spr];
+  if(!im)return'background:#557733';
+  const cw=IW(im)/3,ch=IH(im)/3,scale=52/cw;
+  const bg=im.src?`url(${im.src})`:`url(${im.toDataURL()})`;
+  return `background-image:${bg};background-size:${IW(im)*scale}px ${IH(im)*scale}px;background-position:-${cw*scale}px -${ch*scale*2}px`;
+}
+function openDealer(){
+  invMode='dealer';
+  let h='<h2>🚜 Твой первый трактор</h2>';
+  h+=`<p class="sub" style="margin-bottom:6px">Новый трактор паркуется рядом с площадкой. Продажа — 50% цены (трактор должен быть пустым, и вы не должны в нём сидеть).</p>`;
+  for(let i=0;i<TRACTORS.length;i++){
+    const T=TRACTORS[i];
+    const idx=S.tractors.findIndex(t=>t.tid===i);
+    let right;
+    if(idx<0){
+      right=`<button class="mbtn ${S.money<T.price?'dis':''}" data-cmd='{"a":"buyTr","i":${i}}'>${T.price} ${COIN}</button>`;
+    }else{
+      const tr=S.tractors[idx];
+      const refund=Math.floor(T.price/2);
+      if(T.price<=0)right='<span class="tag">В парке • не продаётся</span>';
+      else if(S.tractors.length<=1)right='<span class="tag">В парке • последний</span>';
+      else if(idx===riding)right='<span class="tag">В парке • выйдите из него</span>';
+      else if(tr.front||tr.rear)right='<span class="tag">В парке • снимите оборудование</span>';
+      else right=`<button class="mbtn red" data-cmd='{"a":"sellTr","i":${idx}}'>Продать ${refund} ${COIN}</button>`;
+    }
+    h+=`<div class="mrow"><div class="thumb" style="${thumbStyle(i)}"></div><div class="inf"><b>${T.name}</b><br><span class="sub">${T.hp} лс • макс. скорость 60 км/ч (зависит от свободной мощности)</span></div>${right}</div>`;
+  }
+  h+='<button class="mclose" data-cmd=\'{"a":"close"}\'>Выйти</button>';
+  openModalRaw(h);
+}
+function openHelp(){
+  invMode='help';
+  openModalRaw(`<h2>🌻 Хуторок — как играть</h2>
+  <p style="line-height:1.5">Вы — фермер: ферма с амбаром и гаражом, <b>100 000 монет</b> (тестовый бюджет) и трактор <b>Кубона</b>. В гараже лежит всё навесное 1 уровня и немного семян.</p>
+  <h3>🎒 Инвентарь (как в Minecraft)</h3>
+  <p style="line-height:1.5">Кнопка <b>🎒</b> (или гараж/магазины) открывает инвентарь. Предметы <b>перетаскиваются</b> между слотами одним движением пальца/мыши; на телефоне работает и тап-взять → тап-положить. Если отпустить палец мимо слота — предмет попадёт в ближайший подходящий слот или вернётся на место.</p>
+  <p style="line-height:1.5"><b>Разделение стака</b> (только в инвентаре): перетащите стак в слот <b>½</b> (или возьмите в руку и нажмите <b>½</b>) — он разделится на два: половина останется в руке, половина вернётся в исходный слот, общее количество не меняется. Shift + клик по слоту — взять половину сразу. <b>🧺 Корзина</b> — временный слот, очищается при закрытии.</p>
+  <p style="line-height:1.5"><b>Стакование:</b> семена — 100, урожай — 10, жидкости — 100 (в гараже), оборудование — 1 шт. <b>Жидкости — только в цистерне или гараже</b>, без смешивания. <b>Прицеп</b> не перевозит жидкости, прицепы и цистерны. <b>Гараж (4×8)</b> доступен только рядом с гаражом.</p>
+  <h3>🚜 Физика прицепа</h3>
+  <p style="line-height:1.5">Прицеп и цистерна соединены с трактором <b>шарниром через фаркоп</b>: на поворотах прицеп поворачивает вслед за трактором и <b>повторяет его траекторию</b>, срезая дугу, а при движении задним ходом реалистично «складывается».</p>
+  <h3>⚙️ Уровни навесного — на что влияют</h3>
+  <p style="line-height:1.5"><b>Ширина обработки за проход:</b> сеялка/поливалка/пропольник/жатка и плуг — ур.1: <b>1 тайл</b>, ур.2: <b>2 тайла</b>, ур.3: <b>3 тайла</b>. При опущенном навесном (F) на земле видна <b>подсвеченная полоса</b> обрабатываемых тайлов (жёлтая — переднее навесное, коричневая — плуг).<br>
+  <b>Прицеп:</b> 4/8/12 слотов. <b>Цистерна:</b> 40/80/150 л.<br>
+  <b>Расход мощности растёт с уровнем</b> (плуг 25/30/36 лс, жатка 18/22/28 лс и т.д.).<br>
+  <i>Совет:</i> сеялка/поливалка/жатка работают только по вспаханным тайлам — чтобы увидеть ширину 2-3 тайла, сначала вспашите широкую полосу плугом того же уровня.</p>
+  <h3>🏪 Покупка и продажа</h3>
+  <p style="line-height:1.5"><b>Покупка перетаскиванием</b>: возьмите товар с витрины (сетка 8 слотов) и перенесите в свободный слот. Оборудование — только в слоты трактора (перед/фаркоп); семена и жидкости — в прицеп/цистерну/гараж. Тап по товару показывает описание до покупки. Продать оборудование (50%) — перетащите в слот 💰 в «Сельхозапгрейде». Тракторы — на площадке «Твой первый трактор» (продажа за полцены).</p>
+  <h3>🌾 Цикл урожая</h3>
+  <p style="line-height:1.5">Плуг на фаркоп → вспашите <b>тайлы поля</b> (тёмная земля) → семена в прицеп → сеялка вперёд → посев → полив (цистерна набирает воду у водоёма ✋), прополка, удобрение (+50%) → жатка собирает урожай в прицеп → <b>Амбар</b>: ✋ Сдать урожай. Гербицидная обработка сохраняется после сбора.</p>
+  <h3>🕹 Управление</h3>
+  <p style="line-height:1.5">Джойстик/WASD — движение (8 направлений). 🚪 — сесть/выйти, ✋ — действие, <b>⬇️(F)</b> — опустить/поднять навесное <b>текущего трактора</b> (работает только в движении). ПК: E/Q/F, I — инвентарь, 1-3 — культура, Z/X/C — жидкость поливалки, Esc — меню. Кнопка <b>☰</b> — главное меню (звук, подсказки, справка).</p>
+  <h3>📅 Прочее</h3>
+  <p style="line-height:1.5">День = <b>6 минут</b> (час = 15 сек). Пшеница 1 день, морковь 2, тыква 3 (растут только политые и без сорняков). Дождь поливает сам, с молниями и кругами на земле. Ночью светят фары, из выхлопной идёт дым. Вода непроходима. Свободная мощность &lt; 60 лс → скорость = остаток (мин. 5 км/ч).</p>
+  <p class="sub" style="margin-top:8px">Шрифт: Pixellari Cyrillic — © YuRaNnNzZZ / zedseven (свободная лицензия).</p>
+  <button class="mbtn red" style="display:block;margin:10px auto" data-cmd='{"a":"reset"}'>Сбросить сохранение</button>
+  <button class="mclose" data-cmd='{"a":"close"}'>Играть!</button>`);
+}
+$('invBtn').addEventListener('click',()=>{if(modalOpen&&invMode&&invMode!=='help')closeModalInv();else openInventory();});
+
+/* ================= ГЛАВНОЕ МЕНЮ ================= */
+function menuVisible(){return $('mainMenu').style.display==='flex';}
+function toggleMainMenu(show){
+  const mm=$('mainMenu');
+  if(show){if(modalOpen)closeModal();mm.style.display='flex';}
+  else mm.style.display='none';
+}
+$('menuBtn').addEventListener('click',()=>toggleMainMenu(true));
+$('mmSound').addEventListener('click',()=>{SETTINGS.sound=!SETTINGS.sound;saveSettings();applySettingsUI();});
+$('mmHints').addEventListener('click',()=>{SETTINGS.hints=!SETTINGS.hints;saveSettings();applySettingsUI();});
+$('mmHow').addEventListener('click',()=>{toggleMainMenu(false);openHelp();});
+$('mmResume').addEventListener('click',()=>toggleMainMenu(false));
+applySettingsUI();
+
+/* ================= КОНТЕКСТ ДЕЙСТВИЙ ================= */
+function playerEnt(){return riding!==null?S.tractors[riding]:boy;}
+function findContext(){
+  const p=playerEnt();let best=null,bd=1e9;
+  for(const b of buildings){
+    const zz=zoneOf(b),d=Math.hypot(p.x-zz.x,p.y-zz.y);
+    if(d<zz.r&&d<bd){bd=d;best={kind:'b',b};}
+  }
+  if(riding!==null){
+    if(!best&&waterNear(p.x,p.y,2.6*TS))best={kind:'water'};
+  }else{
+    for(let i=0;i<S.tractors.length;i++){
+      const tr=S.tractors[i],d=Math.hypot(p.x-tr.x,p.y-tr.y);
+      if(d<3*TS&&d<bd){bd=d;best={kind:'t',i};}
+    }
+    if(!best){
+      const dv=dvec(boy);
+      const tx=Math.floor((p.x+dv[0]*16)/TS),ty=Math.floor((p.y+dv[1]*16)/TS);
+      const s=S.soil[key(tx,ty)];
+      if(s&&s.weed&&Math.hypot(p.x-(tx*TS+8),p.y-(ty*TS+8))<1.6*TS)best={kind:'weed',k:key(tx,ty)};
+    }
+  }
+  return best;
+}
+function ctxLabel(c){
+  if(!c)return'';
+  if(c.kind==='t')return'Сесть в '+TRACTORS[S.tractors[c.i].tid].name;
+  if(c.kind==='weed')return'Прополоть грядку';
+  if(c.kind==='water')return'Набрать воды (цистерна)';
+  const b=c.b;
+  if(b.id==='barn')return riding!==null?'Сдать урожай':'Амбар (нужен трактор с прицепом)';
+  if(b.id==='garage')return'Гараж — инвентарь';
+  if(b.id==='shopA')return'Купить/продать оборудование';
+  if(b.id==='shopF')return'Семена и жидкости';
+  if(b.id==='dealer')return'Площадка тракторов';
+  return b.name;
+}
+function doAction(){
+  const c=findContext();
+  if(!c){openInventory();return;}
+  if(c.kind==='t'){enterTractor(c.i);return;}
+  if(c.kind==='weed'){S.soil[c.k].weed=false;sfx(500,.05);leaf(boy.x,boy.y);return;}
+  if(c.kind==='water'){fillWater();return;}
+  const b=c.b;
+  if(b.id==='barn')sellBarn();
+  else if(b.id==='garage')openInventory();
+  else if(b.id==='shopA')openShop('shopA');
+  else if(b.id==='shopF')openShop('shopF');
+  else if(b.id==='dealer')openDealer();
+}
+function sellBarn(){
+  if(riding===null){toast('Подъезжайте на тракторе с прицепом');return;}
+  const tr=S.tractors[riding],tl=trailerOf(tr);
+  if(!tl){toast('Нужен прицеп на фаркопе');return;}
+  let total=0,detail={};
+  for(let i=0;i<tl.slots.length;i++){
+    const it=tl.slots[i];
+    if(it&&it.t==='crop'){
+      total+=it.n*CROPS[it.crop].sell;
+      detail[it.crop]=(detail[it.crop]||0)+it.n;
+      tl.slots[i]=null;
+    }
+  }
+  if(total<=0){toast('В прицепе нет урожая');return;}
+  S.money+=total;sfxCoin();
+  const dd=Object.keys(detail).map(k=>detail[k]+CROPS[k].icon).join(' ');
+  floats.push({x:tr.x,y:tr.y-20,t:'+'+total+' монет',life:2,col:0xffd75e,el:null});
+  toast('💰 Продано: '+dd+' за '+total+' монет!');
+  save();
+}
+function fillWater(){
+  if(riding===null){toast('Набирать воду нужно цистерной на тракторе');return;}
+  const tr=S.tractors[riding],tk=tankerOf(tr);
+  if(!tk){toast('Нужна цистерна на фаркопе');return;}
+  const cap=TANK_CAP[normLvl(tk.lvl)]||40;
+  const cur=tk.slots[0];
+  if(!cur){tk.slots[0]={t:'liq',liq:'water',n:cap};}
+  else if(cur.liq==='water'){cur.n=cap;}
+  else{toast('⚠ В цистерне '+LIQ[cur.liq].name.toLowerCase()+' — жидкости не смешиваются!');sfx(160,.12);return;}
+  sfx(440,.12,'sine');toast('💧 Цистерна заполнена водой из водоёма');
+  updateChips(true);
+}
+function enterTractor(i){
+  riding=i;boy.hidden=true;
+  const tr=S.tractors[riding];tr._fx=undefined;tr._rx=undefined;
+  if(!tr._trl&&tr.rear&&(tr.rear.kind==='trailer'||tr.rear.kind==='tanker'))initTrailer(tr);
+  $('fIc').textContent=tr.down?'⬆️':'⬇️';
+  sfx(300,.12,'sawtooth');updateChips(true);
+}
+function exitTractor(){
+  const tr=S.tractors[riding];
+  const offs=[[22,8],[-22,8],[0,24],[0,-20],[26,-8],[-26,-8]];
+  for(const o of offs){
+    const p={x:tr.x+o[0],y:tr.y+o[1]};
+    if(!hitSolid(p,6,5)){boy.x=p.x;boy.y=p.y;break;}
+  }
+  const dv=dvec(tr);
+  boy.dx=dv[0];boy.dy=dv[1];boy.face=tr.face||octant(dv[0],dv[1]);
+  boy.hidden=false;riding=null;updateChips(true);sfx(220,.1);
+}
+
+/* ================= ЗВУК/ЭФФЕКТЫ ================= */
+let AC=null;
+function sfx(f,d,type,v){
+  if(!SETTINGS.sound)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||'square';o.frequency.value=f;g.gain.value=v||0.035;
+    o.connect(g);g.connect(AC.destination);o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+(d||0.08));
+    o.stop(AC.currentTime+(d||0.08)+0.02);
+  }catch(e){}
+}
+function sfxCoin(){sfx(880,.07);setTimeout(()=>sfx(1318,.1),70);}
+let toastTO=null;
+function toastOnce(m){const n=performance.now();if(n-lastToast>2500){lastToast=n;toast(m);}}
+function toast(m){
+  const el=$('toast');
+  el.textContent=m;el.style.display='block';
+  clearTimeout(toastTO);toastTO=setTimeout(()=>el.style.display='none',2600);
+}
+function dirt(x,y){for(let i=0;i<5;i++)particles.push({x,y,vx:(Math.random()-.5)*40,vy:-Math.random()*40,life:.5,col:0x6d4a2c});}
+function leaf(x,y){for(let i=0;i<4;i++)particles.push({x,y,vx:(Math.random()-.5)*40,vy:-Math.random()*35,life:.5,col:0x5f9a3a});}
+function dropFx(x,y){for(let i=0;i<3;i++)particles.push({x,y,vx:(Math.random()-.5)*20,vy:-Math.random()*25,life:.4,col:0x6fa8dc});}
+function puffSmoke(tr){
+  const dv=dvec(tr);
+  smokes.push({x:tr.x-dv[0]*10+(Math.random()-.5)*3,y:tr.y-dv[1]*10-7,vx:-dv[0]*10+(Math.random()-.5)*9,vy:-13-Math.random()*9,life:1.1,max:1.1,r:2+Math.random()*1.6});
+}
+
+/* ================= ЧИПЫ ================= */
+function updateChips(force){
+  const el=$('chips');let h='',sig='';
+  if(riding!==null&&S){
+    const tr=S.tractors[riding];
+    if(tr.front&&tr.front.kind==='seeder'){
+      for(const k in CROPS){
+        const n=countSeedsIn(tr,k);
+        sig+='c'+k+n+(selCrop===k?'*':'');
+        h+=`<button class="chip ${selCrop===k?'on':''}" data-crop="${k}">${CROPS[k].icon}<b>${n}</b></button>`;
+      }
+    }else if(tr.front&&tr.front.kind==='waterer'){
+      const arr=[['water','💧'],['fert','🧪'],['herb','☠️']];
+      for(const m of arr){
+        const n=countLiquidIn(tr,m[0]);
+        sig+=m[0]+n+(selMode===m[0]?'*':'');
+        h+=`<button class="chip ${selMode===m[0]?'on':''}" data-mode="${m[0]}">${m[1]}<b>${n}</b></button>`;
+      }
+    }
+  }
+  if(!force&&sig===chipSig)return;
+  chipSig=sig;el.innerHTML=h;
+  el.querySelectorAll('[data-crop]').forEach(b=>b.onclick=()=>{selCrop=b.dataset.crop;updateChips(true);});
+  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{selMode=b.dataset.mode;updateChips(true);});
+}
+
+/* ================= ВВОД ================= */
+const joy=$('joy'),stick=$('stick');
+let joyId=null;
+function joyStart(e){joyId=e.pointerId;try{joy.setPointerCapture(e.pointerId);}catch(err){}joyMove(e);}
+function joyMove(e){
+  if(e.pointerId!==joyId)return;
+  const r=joy.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let dx=e.clientX-cx,dy=e.clientY-cy;
+  const m=Math.hypot(dx,dy),max=r.width*0.38;
+  if(m>max){dx=dx/m*max;dy=dy/m*max;}
+  stick.style.transform=`translate(${dx}px,${dy}px)`;
+  joyV.x=dx/max;joyV.y=dy/max;
+}
+function joyEnd(e){if(e.pointerId!==joyId)return;joyId=null;joyV.x=0;joyV.y=0;stick.style.transform='';}
+joy.addEventListener('pointerdown',joyStart);joy.addEventListener('pointermove',joyMove);
+joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+function toggleAttach(){
+  if(riding===null){toast('Сначала сядьте в трактор');return;}
+  const tr=S.tractors[riding];
+  tr.down=!tr.down;
+  if(tr.down){tr._fx=undefined;tr._rx=undefined;}
+  $('fIc').textContent=tr.down?'⬆️':'⬇️';
+  sfx(tr.down?440:330,.06);
+}
+function pressBtn(id,fn){
+  const el=$(id);
+  el.addEventListener('pointerdown',e=>{e.preventDefault();fn();});
+}
+pressBtn('abtnQ',()=>{if(riding!==null)exitTractor();else{const c=findContext();if(c&&c.kind==='t')enterTractor(c.i);else toast('Нет трактора рядом');}});
+pressBtn('abtnE',doAction);
+pressBtn('abtnF',toggleAttach);
+addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(e.code==='KeyE'&&!modalOpen&&!menuVisible())doAction();
+  if(e.code==='KeyQ'&&!modalOpen&&!menuVisible()){if(riding!==null)exitTractor();else{const c=findContext();if(c&&c.kind==='t')enterTractor(c.i);}}
+  if(e.code==='KeyF'&&!modalOpen&&!menuVisible())toggleAttach();
+  if(e.code==='KeyI'){
+    if(menuVisible())return;
+    if(modalOpen&&(invMode==='inv'||invMode==='shopA'||invMode==='shopF'))closeModalInv();else if(!modalOpen)openInventory();
+  }
+  if(e.code==='Digit1')selCrop='wheat';
+  if(e.code==='Digit2')selCrop='carrot';
+  if(e.code==='Digit3')selCrop='pumpkin';
+  if(e.code==='KeyZ')selMode='water';
+  if(e.code==='KeyX')selMode='fert';
+  if(e.code==='KeyC')selMode='herb';
+  if(e.code==='Escape'){
+    if(menuVisible()){toggleMainMenu(false);return;}
+    if(modalOpen){if(invMode==='inv'||invMode==='shopA'||invMode==='shopF')closeModalInv();else closeModal();return;}
+    toggleMainMenu(true);
+  }
+  if(!modalOpen&&!menuVisible())updateChips(true);
+});
+addEventListener('keyup',e=>keys[e.code]=false);
+function keyVec(){
+  let x=0,y=0;
+  if(keys.KeyA||keys.ArrowLeft)x--;if(keys.KeyD||keys.ArrowRight)x++;
+  if(keys.KeyW||keys.ArrowUp)y--;if(keys.KeyS||keys.ArrowDown)y++;
+  if(x||y){const m=Math.hypot(x,y);return{x:x/m,y:y/m,mag:1};}
+  const m=Math.hypot(joyV.x,joyV.y);
+  return m>0.18?{x:joyV.x/m,y:joyV.y/m,mag:Math.min(1,m)}:{x:0,y:0,mag:0};
+}
+
+/* ================= ОБНОВЛЕНИЕ ================= */
+function update(dt){
+  if(modalOpen||menuVisible())return;
+  S.t+=dt;
+  if(S.t>=DAY_SEC){S.t-=DAY_SEC;newDay();}
+  const v=keyVec();
+  if(riding!==null){
+    const tr=S.tractors[riding],st=stats(tr);
+    const spd=st.maxK*2*v.mag;
+    speedNow=spd;
+    if(v.mag>0.3){
+      tr.dx=v.x;tr.dy=v.y;
+      tr.face=octant(v.x,v.y);
+      moveEnt(tr,tr.dx*spd*dt,tr.dy*spd*dt,13,10);
+    }else if(v.mag>0){
+      tr.dx=v.x;tr.dy=v.y;
+      moveEnt(tr,tr.dx*spd*dt,tr.dy*spd*dt,13,10);
+    }
+    doWork(dt);
+    smokeT-=dt;
+    if(smokeT<=0){smokeT=0.11;puffSmoke(tr);}
+  }else{
+    speedNow=0;
+    const spd=46*v.mag;
+    if(v.mag>0.3){
+      boy.dx=v.x;boy.dy=v.y;
+      boy.face=octant(v.x,v.y);
+      moveEnt(boy,boy.dx*spd*dt,boy.dy*spd*dt,5,4);
+    }else if(v.mag>0){
+      boy.dx=v.x;boy.dy=v.y;
+      moveEnt(boy,boy.dx*spd*dt,boy.dy*spd*dt,5,4);
+    }
+  }
+  for(const tr of S.tractors)updateTrailer(tr);
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;
+    if(p.life<=0)particles.splice(i,1);
+  }
+  for(let i=smokes.length-1;i>=0;i--){
+    const p=smokes[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy-=7*dt;p.r+=6.5*dt;
+    if(p.life<=0)smokes.splice(i,1);
+  }
+  for(let i=floats.length-1;i>=0;i--){
+    const f=floats[i];f.life-=dt;f.y-=20*dt;
+    if(f.life<=0){if(f.el){f.el.destroy();f.el=null;}floats.splice(i,1);}
+  }
+  if(S.rain){
+    while(rainDrops.length<110)rainDrops.push({x:Math.random()*innerWidth*1.3,y:Math.random()*innerHeight,s:300+Math.random()*260});
+    for(const d of rainDrops){d.y+=d.s*dt;d.x-=d.s*0.26*dt;if(d.y>innerHeight){d.y=-10;d.x=Math.random()*innerWidth*1.3;}}
+    if(Math.random()<dt*30)ripples.push({x:cam.x+Math.random()*viewW,y:cam.y+Math.random()*viewH,life:.55,max:.55,r:1});
+    for(let i=ripples.length-1;i>=0;i--){const rp=ripples[i];rp.life-=dt;rp.r+=22*dt;if(rp.life<=0)ripples.splice(i,1);}
+    boltT-=dt;
+    if(boltT<=0){boltT=5+Math.random()*10;flash=0.9;setTimeout(()=>sfx(48,.6,'sine',.06),200+Math.random()*600);}
+    flash=Math.max(0,flash-dt*2.6);
+  }else{rainDrops.length=0;ripples.length=0;flash=0;}
+  const p=playerEnt();
+  cam.x+=(p.x-viewW/2-cam.x)*Math.min(1,dt*6);
+  cam.y+=(p.y-viewH/2-cam.y)*Math.min(1,dt*6);
+  cam.x=Math.max(0,Math.min(MW*TS-viewW,cam.x));
+  cam.y=Math.max(0,Math.min(MH*TS-viewH,cam.y));
+  saveT+=dt;if(saveT>30){saveT=0;save();}
+}
+
+/* =====================================================================
+   СЦЕНА PIXI
+   ===================================================================== */
+let app=null,worldC=null,terrainSpr=null,soilC=null,stripGfx=null,entC=null,fxGfx=null,labelC=null;
+let rainTintGfx=null,rainGfx=null,flashGfx=null,nightGfx=null,hlGlow=null,hlCone=null,ctxText=null,boySpr=null;
+const TEX={impl:{},plow:{}};
+const CELLS={};
+const soilSprites=new Map(),SOIL_TEX=new Map();
+let vehList=[],bldLabels=[],screenDirty=true;
+
+function sheetCells(img){
+  const base=PIXI.Texture.from(img);
+  if(base.baseTexture)base.baseTexture.scaleMode=0;
+  const cw=base.width/3,ch=base.height/3;
+  const cells=[];
+  for(let sy=0;sy<3;sy++){
+    cells[sy]=[];
+    for(let sx=0;sx<3;sx++)cells[sy][sx]=new PIXI.Texture(base,new PIXI.Rectangle(sx*cw,sy*ch,cw,ch));
+  }
+  cells._cw=cw;cells._ch=ch;
+  return cells;
+}
+function makeImplCanvas(kind,lvl){
+  const wS=normLvl(lvl)>=3?1.4:normLvl(lvl)===2?1.2:1;
+  const c=document.createElement('canvas');c.width=48;c.height=48;const x=c.getContext('2d');
+  x.translate(24,24);
+  const col=FRONT[kind]?FRONT[kind].color:'#8a9098';
+  x.fillStyle=col;
+  if(kind==='header'){x.fillRect(-4,-10*wS,9,20*wS);x.fillStyle='#7a6218';x.beginPath();x.arc(5,0,4,0,7);x.fill();}
+  else if(kind==='waterer'){x.fillRect(-4,-7*wS,10,14*wS);x.fillStyle='#bcd6ee';x.fillRect(6,-9*wS,3,18*wS);}
+  else if(kind==='weeder'){x.fillRect(-3,-9*wS,6,18*wS);x.fillStyle='#d0d4d8';for(let i=Math.round(-8*wS);i<=8*wS;i+=4)x.fillRect(3,i,4,2);}
+  else{x.fillRect(-5,-8*wS,10,16*wS);x.fillStyle='#5d4426';for(let i=Math.round(-5*wS);i<=5*wS;i+=5)x.fillRect(5,i,4,2);}
+  return c;
+}
+function makePlowCanvas(lvl){
+  const wS=normLvl(lvl)>=3?1.4:normLvl(lvl)===2?1.2:1;
+  const c=document.createElement('canvas');c.width=48;c.height=48;const x=c.getContext('2d');
+  x.translate(24,24);
+  x.fillStyle='#5b6068';x.fillRect(-6,-9*wS,10,18*wS);
+  x.fillStyle='#8a9098';x.fillRect(-9,-11*wS,5,22*wS);
+  return c;
+}
+function implTex(kind,lvl){
+  const k=kind+normLvl(lvl);
+  if(!TEX.impl[k])TEX.impl[k]=nearestTex(PIXI.Texture.from(makeImplCanvas(kind,lvl)));
+  return TEX.impl[k];
+}
+function plowTex(lvl){
+  const k='p'+normLvl(lvl);
+  if(!TEX.plow[k])TEX.plow[k]=nearestTex(PIXI.Texture.from(makePlowCanvas(lvl)));
+  return TEX.plow[k];
+}
+function makeConeTex(){
+  const W=115,H=88,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const g=x.createLinearGradient(8,0,W,0);
+  g.addColorStop(0,'rgba(255,238,160,0.55)');g.addColorStop(1,'rgba(255,238,160,0)');
+  x.fillStyle=g;
+  x.beginPath();x.moveTo(8,H/2-6);x.lineTo(W,H/2-44);x.lineTo(W,H/2+44);x.lineTo(8,H/2+6);x.closePath();x.fill();
+  return PIXI.Texture.from(c);
+}
+function makeGlowTex(){
+  const R=52,c=document.createElement('canvas');c.width=R*2;c.height=R*2;const x=c.getContext('2d');
+  const g=x.createRadialGradient(R,R,2,R,R,R);
+  g.addColorStop(0,'rgba(255,225,150,0.42)');g.addColorStop(1,'rgba(255,225,150,0)');
+  x.fillStyle=g;x.fillRect(0,0,R*2,R*2);
+  return PIXI.Texture.from(c);
+}
+function soilSig(s){
+  const c=s.crop;
+  return (c?c.type+','+c.g+','+(c.watered?1:0)+(c.fert?1:0):'-')+(s.weed?'w':'')+(s.herb>0?'h':'');
+}
+function drawSoilCanvas(ctx,X,Y,s){
+  ctx.fillStyle=(s.crop&&s.crop.watered)?'#4c3520':'#6d4a2c';
+  ctx.fillRect(X,Y,TS,TS);
+  ctx.fillStyle='rgba(0,0,0,.16)';
+  for(let i=0;i<4;i++)ctx.fillRect(X,Y+2+i*4,TS,1);
+  if(s.herb>0){ctx.fillStyle='rgba(150,80,220,.14)';ctx.fillRect(X,Y,TS,TS);}
+  if(s.crop){
+    const C=CROPS[s.crop.type],ripe=s.crop.g>=C.days;
+    const prog=Math.min(1,(s.crop.g+0.5)/C.days);
+    if(s.crop.fert){ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(X+3,Y+3,1,1);ctx.fillRect(X+11,Y+9,1,1);ctx.fillRect(X+7,Y+12,1,1);}
+    if(s.crop.type==='wheat'){
+      const hh=3+prog*9,col=ripe?'#d8c14a':'#5f9a3a';
+      ctx.fillStyle=col;
+      for(let i=0;i<4;i++)ctx.fillRect(X+2+i*4,Y+14-hh,2,hh);
+      if(ripe){ctx.fillStyle='#efe08a';for(let i=0;i<4;i++)ctx.fillRect(X+2+i*4,Y+14-hh,2,3);}
+    }else if(s.crop.type==='carrot'){
+      ctx.fillStyle=ripe?'#3f7a2a':'#5f9a3a';
+      const hh=3+prog*7;
+      ctx.fillRect(X+6,Y+12-hh,2,hh);ctx.fillRect(X+3,Y+13-hh*.7,2,hh*.7);ctx.fillRect(X+9,Y+13-hh*.7,2,hh*.7);
+      if(ripe){ctx.fillStyle='#e08b2e';ctx.beginPath();ctx.moveTo(X+4,Y+12);ctx.lineTo(X+11,Y+12);ctx.lineTo(X+7.5,Y+15.5);ctx.closePath();ctx.fill();}
+    }else{
+      ctx.fillStyle='#4f8a35';
+      const r=2+prog*4;
+      ctx.beginPath();ctx.arc(X+5,Y+9,r*.7,0,7);ctx.arc(X+11,Y+7,r*.7,0,7);ctx.fill();
+      if(ripe){ctx.fillStyle='#e2762f';ctx.beginPath();ctx.arc(X+8,Y+10,5,0,7);ctx.fill();ctx.fillStyle='#b85a1e';ctx.fillRect(X+7,Y+6,2,3);ctx.fillStyle='#3f7a2a';ctx.fillRect(X+8,Y+4,2,2);}
+    }
+    if(ripe){
+      ctx.strokeStyle='rgba(255,230,130,.55)';ctx.lineWidth=1;ctx.strokeRect(X+.5,Y+.5,TS-1,TS-1);
+    }
+  }
+  if(s.weed){
+    ctx.fillStyle='#3f7a2a';
+    ctx.fillRect(X+2,Y+6,2,5);ctx.fillRect(X+1,Y+5,4,1);
+    ctx.fillRect(X+10,Y+3,2,5);ctx.fillRect(X+9,Y+2,4,1);
+    ctx.fillRect(X+6,Y+11,2,4);ctx.fillRect(X+5,Y+10,4,1);
+  }
+}
+function soilTexture(s,sig){
+  if(SOIL_TEX.has(sig))return SOIL_TEX.get(sig);
+  const c=document.createElement('canvas');c.width=TS;c.height=TS;
+  drawSoilCanvas(c.getContext('2d'),0,0,s);
+  const t=nearestTex(PIXI.Texture.from(c));
+  SOIL_TEX.set(sig,t);
+  return t;
+}
+function buildVeh(){
+  const cont=new PIXI.Container();cont.sortableChildren=true;
+  const rear=new PIXI.Sprite();
+  const body=new PIXI.Sprite();
+  const front=new PIXI.Sprite();front.anchor.set(0.5);
+  cont.addChild(rear,body,front);
+  entC.addChild(cont);
+  return{cont,rear,body,front};
+}
+/* Текст — только в ЭКРАННОМ пространстве (без масштабирования миром),
+   размер увеличен на ПК (IS_DESKTOP) */
+function mkText(str,size,fill,bg){
+  const st={fontFamily:FONT_STACK,fontSize:size,fill:fill,resolution:TXT_RES};
+  if(bg){st.backgroundColor=bg;st.padding=3;}
+  const t=new PIXI.Text(str,st);
+  t.anchor.set(0.5,1);
+  return t;
+}
+async function buildScene(){
+  const opts={resizeTo:window,antialias:false,backgroundColor:0x141a10,resolution:Math.min(devicePixelRatio||1,2),autoDensity:true};
+  app=new PIXI.Application(opts);
+  if(typeof app.init==='function'&&!app.renderer){try{await app.init(opts);}catch(e){}}
+  const v=app.view;v.id='game';
+  document.body.prepend(v);
+
+  worldC=new PIXI.Container();app.stage.addChild(worldC);
+  TEX.terrain=nearestTex(PIXI.Texture.from(mapCanvas));
+  terrainSpr=new PIXI.Sprite(TEX.terrain);worldC.addChild(terrainSpr);
+  soilC=new PIXI.Container();worldC.addChild(soilC);
+  stripGfx=new PIXI.Graphics();worldC.addChild(stripGfx);
+  entC=new PIXI.Container();entC.sortableChildren=true;worldC.addChild(entC);
+  fxGfx=new PIXI.Graphics();worldC.addChild(fxGfx);
+
+  rainTintGfx=new PIXI.Graphics();rainGfx=new PIXI.Graphics();flashGfx=new PIXI.Graphics();nightGfx=new PIXI.Graphics();
+  app.stage.addChild(rainTintGfx,rainGfx,flashGfx,nightGfx);
+  const AB=addBlend();
+  hlGlow=new PIXI.Sprite(makeGlowTex());hlGlow.blendMode=AB;hlGlow.anchor.set(0.5);hlGlow.visible=false;
+  hlCone=new PIXI.Sprite(makeConeTex());hlCone.blendMode=AB;hlCone.anchor.set(0,0.5);hlCone.visible=false;
+  app.stage.addChild(hlGlow,hlCone);
+  labelC=new PIXI.Container();app.stage.addChild(labelC);
+
+  CELLS.boy=sheetCells(IMG.boy);
+  TRACTORS.forEach(t=>CELLS[t.spr]=sheetCells(IMG[t.spr]));
+  CELLS.trailer1=sheetCells(IMG.trailer1);
+  CELLS.trailer2=sheetCells(IMG.trailer2);
+  CELLS.tanker=sheetCells(IMG.tanker);
+
+  bldLabels=[];
+  for(const b of buildings){
+    const spr=new PIXI.Sprite(nearestTex(PIXI.Texture.from(b.img)));
+    spr.position.set(b.tx*TS,b.ty*TS);
+    spr.zIndex=(b.ty+b.h)*TS;
+    entC.addChild(spr);
+    const lb=mkText(b.name,TXT_SZ.bld,0xffe9a8,'rgba(0,0,0,0.65)');
+    labelC.addChild(lb);
+    bldLabels.push({lb,b});
+  }
+  boySpr=new PIXI.Sprite();
+  entC.addChild(boySpr);
+  ctxText=mkText('',TXT_SZ.ctx,0xffd75e,'rgba(0,0,0,0.6)');
+  ctxText.visible=false;
+  labelC.addChild(ctxText);
+
+  const mc=document.createElement('canvas');mc.width=128;mc.height=128;
+  mc.getContext('2d').drawImage(mapCanvas,0,0,128,128);
+  IMG._mini=mc;miniReady=true;
+
+  screenDirty=true;
+  resize();
+  app.ticker.add(tk=>{
+    const dt=Math.min(0.05,tk.deltaMS/1000||0.016);
+    try{update(dt);syncScene(performance.now()/1000);}catch(err){console.error(err);}
+  });
+}
+function resize(){
+  z=Math.max(2,Math.min(4,Math.round(Math.min(innerWidth,innerHeight)/190)));
+  viewW=innerWidth/z;viewH=innerHeight/z;
+  screenDirty=true;
+}
+addEventListener('resize',resize);
+
+function syncSoil(t){
+  const x0=Math.floor(cam.x/TS)-1,y0=Math.floor(cam.y/TS)-1,x1=x0+Math.ceil(viewW/TS)+3,y1=y0+Math.ceil(viewH/TS)+3;
+  const seen=new Set();
+  for(const k in S.soil){
+    const s=S.soil[k];
+    const x=k%MW,y=(k/MW)|0;
+    seen.add(k);
+    const sig=soilSig(s);
+    let e=soilSprites.get(k);
+    if(!e){
+      const spr=new PIXI.Sprite(soilTexture(s,sig));
+      spr.position.set(x*TS,y*TS);
+      soilC.addChild(spr);
+      e={spr,sig};
+      soilSprites.set(k,e);
+    }else if(e.sig!==sig){
+      e.spr.texture=soilTexture(s,sig);
+      e.sig=sig;
+    }
+    const vis=!(x<x0||x>x1||y<y0||y>y1);
+    e.spr.visible=vis;
+    if(vis&&s.crop&&s.crop.g>=CROPS[s.crop.type].days)e.spr.alpha=0.82+0.18*Math.sin(t*5+x*3+y*5);
+    else e.spr.alpha=1;
+  }
+  for(const [k,e] of soilSprites){
+    if(!seen.has(k)){soilC.removeChild(e.spr);e.spr.destroy();soilSprites.delete(k);}
+  }
+}
+function syncVehicle(tr,veh){
+  const dv=dvec(tr),dx=dv[0],dy=dv[1];
+  const dc=tr.face||octant(dx,dy),cx=dc[0],cy=dc[1];
+  const ang=Math.atan2(dy,dx);
+  veh.cont.position.set(tr.x,tr.y);
+  veh.cont.zIndex=tr.y+14;
+  const cells=CELLS[TRACTORS[tr.tid].spr];
+  veh.body.texture=cells[cy][cx];
+  veh.body.position.set(-17,-22);
+  veh.body.width=34;veh.body.height=34*(cells._ch/cells._cw);
+  const r=tr.rear;
+  if(r&&(r.kind==='trailer'||r.kind==='tanker')&&tr._trl){
+    const cs=r.kind==='tanker'?CELLS.tanker:((normLvl(r.lvl)>=3&&IMG.trailer2)?CELLS.trailer2:CELLS.trailer1);
+    const tdc=octant(Math.cos(tr._trl.ang),Math.sin(tr._trl.ang));
+    veh.rear.texture=cs[tdc[1]][tdc[0]];
+    veh.rear.anchor.set(0.5,0.5);
+    veh.rear.rotation=0;
+    veh.rear.position.set(tr._trl.x-tr.x,tr._trl.y-tr.y);
+    veh.rear.width=30;veh.rear.height=30*(cs._ch/cs._cw);
+    veh.rear.visible=true;
+  }else if(r&&r.kind==='plow'){
+    veh.rear.texture=plowTex(r.lvl);
+    veh.rear.anchor.set(0.5);
+    veh.rear.rotation=ang;
+    veh.rear.position.set(-dx*24,-dy*24);
+    veh.rear.width=48;veh.rear.height=48;
+    veh.rear.visible=true;
+  }else veh.rear.visible=false;
+  const f=tr.front;
+  if(f){
+    veh.front.visible=true;
+    veh.front.texture=implTex(f.kind,f.lvl);
+    veh.front.rotation=ang;
+    veh.front.position.set(dx*22,dy*22+(tr.down?0:-3));
+    veh.front.width=48;veh.front.height=48;
+    veh.front.alpha=tr.down?1:0.55;
+  }else veh.front.visible=false;
+  if(dy<0){veh.body.zIndex=0;veh.rear.zIndex=1;veh.front.zIndex=2;}
+  else{veh.rear.zIndex=0;veh.body.zIndex=1;veh.front.zIndex=2;}
+}
+function drawStripFor(tr){
+  const dv=dvec(tr),dx=dv[0],dy=dv[1];
+  const pp=perpDir(dx,dy),perpx=pp[0],perpy=pp[1];
+  const paint=(ax,ay,lvl,color,alpha)=>{
+    const offs=widthOffsets(lvl);
+    const tx0=Math.floor(ax/TS),ty0=Math.floor(ay/TS);
+    stripGfx.beginFill(color,alpha);
+    for(const o of offs)stripGfx.drawRect((tx0+perpx*o)*TS,(ty0+perpy*o)*TS,TS,TS);
+    stripGfx.endFill();
+  };
+  if(tr.front)paint(tr.x+dx*28,tr.y+dy*28,tr.front.lvl,0xffe678,0.20);
+  if(tr.rear&&tr.rear.kind==='plow')paint(tr.x-dx*28,tr.y-dy*28,tr.rear.lvl,0xaa783c,0.25);
+}
+function syncScene(t){
+  if(!app)return;
+  worldC.scale.set(z);
+  worldC.position.set(-cam.x*z,-cam.y*z);
+
+  syncSoil(t);
+
+  stripGfx.clear();
+  if(riding!==null){
+    const tr0=S.tractors[riding];
+    if(tr0.down)drawStripFor(tr0);
+  }
+
+  while(vehList.length<S.tractors.length)vehList.push(buildVeh());
+  while(vehList.length>S.tractors.length){
+    const v=vehList.pop();
+    entC.removeChild(v.cont);
+    v.cont.destroy({children:true});
+  }
+  for(let i=0;i<S.tractors.length;i++)syncVehicle(S.tractors[i],vehList[i]);
+
+  boySpr.visible=!boy.hidden;
+  if(!boy.hidden){
+    const dc=boy.face||[1,2];
+    const cs=CELLS.boy;
+    boySpr.texture=cs[dc[1]][dc[0]];
+    const bob=(Math.sin(t*10)>0&&speedNow>1)?1:0;
+    boySpr.position.set(boy.x-11,boy.y-16+bob);
+    boySpr.width=22;boySpr.height=22*(cs._ch/cs._cw);
+    boySpr.zIndex=boy.y+8;
+  }
+
+  fxGfx.clear();
+  for(const p of particles){
+    fxGfx.beginFill(p.col,Math.max(0,p.life*2));
+    fxGfx.drawRect(p.x-1,p.y-1,3,3);
+    fxGfx.endFill();
+  }
+  for(const p of smokes){
+    fxGfx.beginFill(0xd8dce0,Math.max(0,0.3*(p.life/p.max)));
+    fxGfx.drawCircle(p.x,p.y,p.r);
+    fxGfx.endFill();
+  }
+  if(S.rain){
+    fxGfx.lineStyle(1,0xbed7ff,0.5);
+    for(const rp of ripples)fxGfx.drawEllipse(rp.x,rp.y,rp.r,rp.r*0.5);
+    fxGfx.lineStyle(0);
+  }
+
+  /* ---- экранный текстовый слой (чёткий, крупнее на ПК) ---- */
+  for(const f of floats){
+    if(!f.el){
+      f.el=new PIXI.Text(f.t,{fontFamily:FONT_STACK,fontSize:TXT_SZ.float,fill:f.col,stroke:'#000000',strokeThickness:3,resolution:TXT_RES});
+      f.el.anchor.set(0.5,1);
+      labelC.addChild(f.el);
+    }
+    f.el.position.set((f.x-cam.x)*z,(f.y-cam.y)*z);
+    f.el.alpha=Math.min(1,f.life);
+  }
+  for(const e of bldLabels){
+    const b=e.b;
+    const sx=((b.tx+b.w/2)*TS-cam.x)*z;
+    const sy=((b.ty)*TS-3-cam.y)*z;
+    e.lb.position.set(sx,sy);
+    e.lb.visible=sx>-160&&sx<innerWidth+160&&sy>8&&sy<innerHeight+40;
+  }
+  const c=findContext();
+  if(c){
+    let p2;
+    if(c.kind==='b')p2=zoneOf(c.b);
+    else if(c.kind==='t')p2=S.tractors[c.i];
+    else{const dv2=dvec(playerEnt());p2={x:playerEnt().x+dv2[0]*16,y:playerEnt().y+dv2[1]*16};}
+    ctxText.visible=true;
+    ctxText.text='✋ '+ctxLabel(c);
+    ctxText.position.set((p2.x-cam.x)*z,(p2.y-12+Math.sin(t*4)*2-cam.y)*z);
+  }else ctxText.visible=false;
+
+  if(screenDirty){
+    const W=innerWidth,H=innerHeight;
+    nightGfx.clear();nightGfx.beginFill(0x0a0e2d);nightGfx.drawRect(0,0,W,H);nightGfx.endFill();
+    rainTintGfx.clear();rainTintGfx.beginFill(0x3c506e,0.22);rainTintGfx.drawRect(0,0,W,H);rainTintGfx.endFill();
+    flashGfx.clear();flashGfx.beginFill(0xebf5ff);flashGfx.drawRect(0,0,W,H);flashGfx.endFill();
+    screenDirty=false;
+  }
+  rainTintGfx.visible=S.rain;
+  rainGfx.visible=S.rain;
+  if(S.rain){
+    rainGfx.clear();
+    rainGfx.lineStyle(1,0xaac8f0,0.45);
+    for(const d of rainDrops){
+      rainGfx.moveTo(d.x,d.y);
+      rainGfx.lineTo(d.x-4,d.y+13);
+    }
+    rainGfx.lineStyle(0);
+  }
+  flashGfx.visible=flash>0;
+  flashGfx.alpha=flash*0.5;
+  const dk=darkness();
+  nightGfx.visible=dk>0;
+  nightGfx.alpha=dk;
+  const lights=dk>0&&riding!==null;
+  hlCone.visible=lights;hlGlow.visible=lights;
+  if(lights){
+    const tr=S.tractors[riding];
+    const dv=dvec(tr);
+    const ang=Math.atan2(dv[1],dv[0]);
+    const sx=(tr.x-cam.x)*z,sy=(tr.y-cam.y)*z;
+    const ia=Math.min(1,dk/0.55);
+    hlCone.position.set(sx,sy);hlCone.rotation=ang;hlCone.scale.set(z);hlCone.alpha=ia;
+    hlGlow.position.set(sx,sy);hlGlow.scale.set(z);hlGlow.alpha=ia;
+  }
+
+  hudT-=1/60;
+  if(hudT<=0){
+    hudT=.25;
+    const hh=Math.floor(S.t/HOUR_SEC)%24;
+    const mm=Math.floor(((S.t%HOUR_SEC)/HOUR_SEC*60)/10)*10;
+    $('hMoney').innerHTML=COIN+' '+S.money;
+    $('hTime').textContent=`📅 День ${S.day} • ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+    $('hWx').textContent=S.rain?'🌧 Дождь':'☀️ Ясно';
+    const hs=$('hSpeed');
+    if(riding!==null){
+      const tr=S.tractors[riding];
+      hs.style.display='flex';
+      const wid=tr.front?eqWidth(tr.front.lvl):(tr.rear&&tr.rear.kind==='plow'?eqWidth(tr.rear.lvl):0);
+      hs.textContent=`🚜 ${Math.round(speedNow/2)} км/ч • ${tr.down?(wid?`⬇ работает, ${wid} тайл.`:'⬇ работает'):'⬆ поднято'}`;
+      $('fIc').textContent=tr.down?'⬆️':'⬇️';
+    }else hs.style.display='none';
+    const hc=$('hCargo');
+    if(riding!==null){
+      const tr=S.tractors[riding],tl=trailerOf(tr),tk=tankerOf(tr);
+      if(tl){
+        let used=0;const tot={wheat:0,carrot:0,pumpkin:0};
+        for(const it of tl.slots){
+          if(!it)continue;used++;
+          if(it.t==='seed'||it.t==='crop')tot[it.crop]+=it.n;
+        }
+        hc.style.display='flex';
+        hc.textContent=`📦 ${used}/${tl.slots.length} сл. • 🌾${tot.wheat} 🥕${tot.carrot} 🎃${tot.pumpkin}`;
+      }else if(tk){
+        const lq=tankLiq(tr);
+        hc.style.display='flex';
+        hc.textContent=`🛢 ${lq?LIQ[lq.liq].icon+' '+lq.n:'—'} / ${TANK_CAP[normLvl(tk.lvl)]}`;
+      }else hc.style.display='none';
+    }else hc.style.display='none';
+    $('qLbl').textContent=riding!==null?'Выйти':'Сесть';
+    $('eLbl').textContent=c?ctxLabel(c).split(' ')[0]:'—';
+    $('prompt').style.display=c?'block':'none';
+    if(c)$('prompt').textContent='✋ '+ctxLabel(c);
+    $('hint').style.display=SETTINGS.hints?'block':'none';
+    if(SETTINGS.hints)$('hint').textContent=hintText();
+    updateChips(false);
+    drawMini();
+  }
+}
+function hintText(){
+  if(riding===null)return'🎒 Инвентарь — кнопка справа; сядьте в трактор (🚪)';
+  let anyTilled=false,anyCrop=false,unwatered=false,ripe=false,weeded=false;
+  for(const k in S.soil){const s=S.soil[k];anyTilled=true;if(s.crop){anyCrop=true;if(!s.crop.watered)unwatered=true;if(s.crop.g>=CROPS[s.crop.type].days)ripe=true;}if(s.weed)weeded=true;}
+  let hasCropTrailer=false;
+  for(const tr of S.tractors){const tl=trailerOf(tr);if(tl)for(const it of tl.slots)if(it&&it.t==='crop'&&it.n>0)hasCropTrailer=true;}
+  if(hasCropTrailer)return'🏠 Отвезите урожай в амбар и нажмите ✋';
+  if(ripe)return'✨ Урожай созрел — соберите жаткой в прицеп';
+  if(weeded)return'🌿 Сорняки! Пропольник или ✋ пешком';
+  if(anyCrop&&unwatered&&!S.rain)return'💧 Полейте: вода — у водоёма (✋), поливалка спереди';
+  if(anyTilled&&!anyCrop){
+    const tr=playerEnt();
+    const inTrailer=countSeedsIn(tr,null);
+    if(inTrailer>0)return'🌱 Сейте сеялкой (навесное ⬇, культура — чипы справа)';
+    if(countSeedsEverywhere()>0)return'🎒 Переложите семена из гаража в прицеп (инвентарь)';
+    return'🏬 Купите семена в «Всё для фермера» (райцентр на востоке)';
+  }
+  if(!anyTilled){
+    const anyPlow=S.tractors.some(t2=>t2.rear&&t2.rear.kind==='plow');
+    return anyPlow?'⬇️ Опустите навесное (F) и вспашите тайлы поля (тёмная земля)':'🎒 Перетащите плуг на фаркоп трактора (инвентарь), затем вспашите поле';
+  }
+  return'🌻 Рост: пшеница 1 дн, морковь 2, тыква 3';
+}
+function drawMini(){
+  if(!miniReady)return;
+  const mc=$('mini'),mx=mc.getContext('2d');
+  mx.imageSmoothingEnabled=false;
+  mx.clearRect(0,0,128,128);
+  mx.drawImage(IMG._mini,0,0);
+  for(const b of buildings){
+    mx.fillStyle=(b.id==='barn'||b.id==='garage')?'#e05040':'#ffd75e';
+    mx.fillRect(b.tx,b.ty,Math.max(2,b.w),Math.max(2,b.h));
+  }
+  const p=playerEnt();
+  mx.fillStyle=(Math.floor(performance.now()/400)%2)?'#fff':'#8aff8a';
+  mx.fillRect((p.x/TS|0)-1,(p.y/TS|0)-1,3,3);
+  mx.fillStyle='#7ab8ff';
+  for(const tr of S.tractors)mx.fillRect((tr.x/TS|0),(tr.y/TS|0),2,2);
+}
+
+/* ================= СТАРТ ================= */
+function showBootError(msg){
+  console.error(msg);
+  setLoad('⚠ '+msg);
+  $('offlineBtn').style.display='block';
+  $('offlineBtn').textContent='Перезапустить';
+  $('offlineBtn').onclick=()=>{location.reload();};
+}
+function finishBoot(){
+  $('load').style.display='none';
+  document.addEventListener('pointerdown',()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}},{once:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+  updateChips(true);
+  save();
+  if(!S.helpShown){S.helpShown=true;openHelp();}
+  else toggleMainMenu(true);
+}
+function boot(){
+  if(booted)return;booted=true;
+  try{
+    setLoad('Генерация построек…');
+    findSpawn();setupWorld();
+    if(!loadSave())S=newGame();
+    for(const k in S.soil){
+      const x=k%MW,y=(k/MW)|0;
+      if(!isFieldTile(x,y))delete S.soil[k];
+    }
+    for(const tr of S.tractors){
+      if(hitSolid(tr,13,10)){tr.x=(spawn.x+2)*TS;tr.y=(spawn.y-3)*TS;}
+      tr._trl=null;
+    }
+    boy.x=S.tractors[0].x+24;boy.y=S.tractors[0].y+10;boy.dx=0;boy.dy=1;boy.face=[1,2];
+    if(hitSolid(boy,5,4)){boy.x=(spawn.x+1)*TS;boy.y=(spawn.y+1)*TS;}
+    resize();
+    const p=playerEnt();
+    cam.x=Math.max(0,Math.min(MW*TS-viewW,p.x-viewW/2));
+    cam.y=Math.max(0,Math.min(MH*TS-viewH,p.y-viewH/2));
+    setLoad('Инициализация PIXI…');
+    Promise.resolve(buildScene()).then(finishBoot).catch(err=>showBootError('Ошибка запуска PIXI: '+(err&&err.message?err.message:err)));
+  }catch(err){
+    showBootError('Ошибка запуска: '+(err&&err.message?err.message:err));
+  }
+}
+$('offlineBtn').addEventListener('click',()=>{
+  try{ensureFallbacks();finishAssets();boot();}catch(err){setLoad('⚠ '+err.message);}
+});
+(async function init(){
+  setLoad('Загрузка движка pixi.js…');
+  const pixiP=loadPixi().catch(err=>{
+    setLoad('⚠ Не удалось загрузить pixi.js v7: '+(err&&err.message?err.message:err));
+    $('offlineBtn').style.display='block';
+    $('offlineBtn').textContent='Повторить';
+    $('offlineBtn').onclick=()=>location.reload();
+    throw err;
+  });
+  setLoad('Загрузка шрифта Pixellari…');
+  const fontP=loadFonts();
+  try{await pixiP;}catch(e){return;}
+  await fontP;
+  setLoad('Загрузка карты и спрайтов из репозитория…');
+  setTimeout(()=>{if(!booted){$('offlineBtn').style.display='block';setLoad('Если ассеты не грузятся (нет доступа к GitHub) — нажмите кнопку ниже или дождитесь таймаута.');}},5000);
+  try{await loadAssets();}catch(e){console.error(e);}
+  try{ensureFallbacks();finishAssets();}catch(e){console.error(e);setLoad('⚠ '+e.message);}
+  boot();
+})();
+</script>
+</body>
+</html>
