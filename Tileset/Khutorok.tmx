@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="76">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="81">
  <tileset firstgid="1" source="Autotile_Grass_and_Dirt_Path_Tileset.tsx"/>
  <tileset firstgid="232" source="Tileset_Floor_Detail.tsx"/>
  <tileset firstgid="287" source="Nature_Tileset.tsx"/>
  <tileset firstgid="539" source="Crops_Tileset.tsx"/>
+ <tileset firstgid="713" source="Buildings.tsx"/>
  <layer id="1" name="Слой тайлов 1" width="128" height="128">
   <data encoding="csv">
 35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
@@ -151,6 +152,11 @@
   <object id="43" gid="356" x="1312" y="1056" width="16" height="16"/>
   <object id="62" gid="612" x="1280" y="848" width="16" height="16"/>
   <object id="63" gid="614" x="1216" y="848" width="16" height="16"/>
+  <object id="76" gid="713" x="1568" y="1104" width="256" height="256"/>
+  <object id="77" gid="714" x="1312" y="1360" width="144" height="128"/>
+  <object id="78" gid="715" x="1024" y="976" width="144" height="128"/>
+  <object id="79" gid="716" x="864" y="976" width="128" height="128"/>
+  <object id="80" gid="717" x="960" y="1488" width="256" height="256"/>
  </objectgroup>
  <layer id="4" name="Детали" width="128" height="128">
   <data encoding="csv">
