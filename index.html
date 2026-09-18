@@ -6,157 +6,23 @@
 <title>Хуторок — фермерская игра</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/rubik@latest/cyrillic-400-normal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/rubik@latest/cyrillic-700-normal.css">
+<!-- raw.githubusercontent.com отдаёт CSS как text/plain + nosniff — браузер блокирует такие
+     стили, поэтому style.css подключён через jsDelivr (Content-Type: text/css).
+     Если CDN недоступен, скрипт-фолбэк подключит style.css, лежащий рядом с index.html. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kennyepish/Khutorok-2@main/style.css">
+<script>
+addEventListener('load',function(){
+  try{
+    if(!getComputedStyle(document.documentElement).getPropertyValue('--sz').trim()){
+      var l=document.createElement('link');l.rel='stylesheet';l.href='style.css';document.head.appendChild(l);
+    }
+  }catch(e){}
+});
+</script>
 <style>
-/* Свободный кириллический пиксельный шрифт Pixellari Cyrillic
-   (авторы: YuRaNnNzZZ / zedseven, 100% free to use) */
-@font-face{
-  font-family:'Pixellari';
-  src:url('https://cdn.jsdelivr.net/gh/YuRaNnNzZZ/PixellariCyrillic@master/Pixellari.ttf') format('truetype'),
-      url('https://raw.githubusercontent.com/YuRaNnNzZZ/PixellariCyrillic/master/Pixellari.ttf') format('truetype');
-  font-display:swap;
-}
-:root{--sz:46px}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#1a2218;font-family:'Pixellari','Rubik',system-ui,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#game{position:fixed;inset:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;image-rendering:crisp-edges}
-.coin{display:inline-block;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe98a,#e8b628 60%,#a87c14);border:1px solid #7a5a10;vertical-align:-1px;flex-shrink:0}
-.hud{position:fixed;z-index:10;pointer-events:none}
-#topL{top:calc(8px + env(safe-area-inset-top));left:8px;display:flex;flex-direction:column;gap:5px;max-width:62vw}
-.pill{background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;color:#f2ecd8;padding:4px 9px;font-size:13px;font-weight:400;display:flex;align-items:center;gap:5px;text-shadow:1px 1px 0 #000;white-space:nowrap}
-#miniWrap{top:calc(8px + env(safe-area-inset-top));right:8px;background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;padding:4px}
-#mini{display:block;width:100px;height:100px;image-rendering:pixelated;border-radius:6px}
-.tbtn{position:fixed;right:8px;pointer-events:auto;width:40px;height:40px;border-radius:10px;background:rgba(20,26,20,.85);border:2px solid #4a5a3a;color:#ffe9a8;font-size:19px;font-weight:400;cursor:pointer;z-index:11;font-family:inherit}
-#menuBtn{top:calc(134px + env(safe-area-inset-top))}
-#invBtn{top:calc(182px + env(safe-area-inset-top))}
-#toast{position:fixed;top:calc(232px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:max-content;max-width:min(76vw,380px);background:rgba(15,20,12,.93);border:2px solid #ffd75e;border-radius:10px;color:#ffe9a8;padding:8px 16px;font-size:13px;font-weight:400;display:none;z-index:30;text-align:center;text-shadow:1px 1px 0 #000}
-#hint{bottom:calc(216px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:min(48vw,340px);background:rgba(20,26,20,.82);border:2px solid #4a5a3a;border-radius:10px;color:#ffe9a8;padding:5px 11px;font-size:12px;font-weight:400;text-align:center;text-shadow:1px 1px 0 #000;white-space:normal;display:none}
-#prompt{bottom:calc(170px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:min(48vw,340px);background:rgba(30,40,25,.9);border:2px solid #8aa860;border-radius:10px;color:#fff;padding:6px 13px;font-size:13px;font-weight:400;display:none;text-shadow:1px 1px 0 #000;text-align:center;white-space:normal}
-#chips{bottom:calc(268px + env(safe-area-inset-bottom));right:16px;display:flex;flex-direction:column;gap:6px;pointer-events:auto;align-items:flex-end;z-index:11}
-.chip{background:rgba(20,26,20,.88);border:2px solid #4a5a3a;border-radius:10px;color:#f2ecd8;font-size:16px;padding:5px 9px;cursor:pointer;font-weight:400;display:flex;align-items:center;gap:5px;font-family:inherit}
-.chip b{font-size:12px;color:#ffe9a8;font-weight:400}
-.chip.on{border-color:#ffd75e;background:#4a5a2a;box-shadow:0 0 8px #ffd75e88}
-#joy{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;background:rgba(30,40,25,.5);border:2px solid rgba(140,170,100,.55);pointer-events:auto;z-index:12}
-#stick{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(160,190,110,.75);border:2px solid rgba(240,240,210,.7)}
-#btns{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));right:14px;display:flex;flex-direction:column;gap:10px;z-index:11;pointer-events:auto;align-items:flex-end}
-.abtn{width:66px;height:66px;border-radius:50%;border:2px solid #8aa860;background:rgba(35,48,28,.9);color:#f2ecd8;font-size:11px;font-weight:400;cursor:pointer;text-shadow:1px 1px 0 #000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1;font-family:inherit}
-.abtn .ic{font-size:20px}
-#abtnE{width:78px;height:78px;background:rgba(90,110,45,.95);border-color:#ffd75e}
-#modalWrap{position:fixed;inset:0;background:rgba(5,8,4,.72);z-index:40;display:none;align-items:center;justify-content:center;padding:12px}
-#modal{background:#232c1e;border:3px solid #8aa860;border-radius:14px;color:#f2ecd8;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:16px;font-size:14px;box-shadow:0 10px 40px #000}
-#modal h2{color:#ffd75e;font-size:18px;margin-bottom:8px;text-shadow:1px 1px 0 #000;font-weight:400}
-#modal h3{color:#cfe0a8;font-size:13px;margin:10px 0 5px;font-weight:400}
-.mrow{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#2c3726;border:1px solid #4a5a3a;border-radius:8px;padding:7px 10px;margin-bottom:6px}
-.mrow .inf{flex:1;line-height:1.35}
-.mrow .sub,#modal .sub{font-size:11px;color:#a8b890}
-.mbtn{background:#5c7a35;border:2px solid #a8c870;color:#fff;border-radius:8px;padding:6px 10px;font-weight:400;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
-.mbtn:active{transform:scale(.96)}
-.mbtn:disabled{background:#3a4232;border-color:#55604a;color:#8a9478;cursor:default}
-.mbtn.red{background:#8a3a2a;border-color:#c86a50}
-.mclose{display:block;margin:12px auto 0;background:#3a4a2c;border:2px solid #8aa860;color:#ffe9a8;border-radius:10px;padding:8px 26px;font-weight:400;font-size:14px;cursor:pointer;font-family:inherit}
-.thumb{width:52px;height:52px;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;flex-shrink:0}
-.tag{display:inline-block;background:#4a5a2a;border-radius:6px;padding:1px 7px;font-size:11px;margin:1px;color:#ffe9a8}
-.invtop{display:flex;gap:6px;align-items:center;min-height:calc(var(--sz) + 8px);margin-bottom:6px;flex-wrap:wrap}
-.heldname{font-size:12px;color:#ffe9a8;font-weight:400}
-.invgrid{display:grid;grid-template-columns:repeat(var(--cols),var(--sz));gap:4px;justify-content:center;margin:0 auto 8px}
-.slot{position:relative;width:var(--sz);height:var(--sz);background:#1c2418;border:2px solid #4a5a3a;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:none}
-.slot>*{pointer-events:none}
-.slot .si{font-size:calc(var(--sz) * .5);line-height:1}
-.slot img.ei{width:86%;height:86%;image-rendering:pixelated}
-.slot .cn{position:absolute;right:2px;bottom:0;font-size:10px;font-weight:400;color:#fff;text-shadow:1px 1px 0 #000}
-.slot .lv{position:absolute;left:2px;top:0;font-size:9px;font-weight:400;color:#ffd75e;text-shadow:1px 1px 0 #000}
-.slot .ph{font-size:10px;opacity:.45;text-align:center;padding:2px;line-height:1.1}
-.slot.eq{border-style:dashed;border-color:#8aa860}
-.slot.t-seed{border-color:#a8875a;background:#241f16}
-.slot.t-crop{border-color:#6aa84f;background:#1c2418}
-.slot.t-liq{border-color:#4f83cc;background:#16202c}
-.slot.t-equip{border-color:#b0b8c0;background:#20242a}
-.slot.offer{border-color:#8a7a3a}
-.slot.offer.poor{opacity:.45}
-.slot.offer .pr{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-weight:400;background:rgba(0,0,0,.62);color:#ffd75e;text-align:center;border-radius:0 0 4px 4px;padding:1px 0;display:flex;align-items:center;justify-content:center;gap:2px}
-.slot.offer .pr .coin{width:8px;height:8px}
-.slot.offer .bn{position:absolute;right:2px;top:0;font-size:10px;font-weight:400;color:#fff;text-shadow:1px 1px 0 #000}
-.slot.sell{border-color:#c8a24a;background:#2a2416;border-style:dashed}
-.slot.basket{border-color:#d87a3a;background:#2a1f16;border-style:dashed}
-.slot.split{border-color:#8aa860;background:#1f2618}
-#heldEl{position:fixed;z-index:60;pointer-events:none;display:none;width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2)}
-#heldEl .slot{width:100%;height:100%;box-shadow:0 4px 12px rgba(0,0,0,.55)}
-#tip{position:fixed;z-index:70;display:none;max-width:250px;background:rgba(10,14,8,.96);border:2px solid #8aa860;border-radius:8px;color:#e8f0d8;padding:6px 9px;font-size:12px;line-height:1.45;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.5)}
-#mainMenu{position:fixed;inset:0;background:rgba(10,14,8,.92);z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
-#mainMenu h1{color:#ffd75e;font-size:34px;margin-bottom:10px;text-shadow:2px 2px 0 #3a4a20;font-weight:400;letter-spacing:2px}
-#mainMenu .mm-row{display:flex;align-items:center;justify-content:space-between;width:min(340px,90vw);background:#232c1e;border:2px solid #4a5a3a;border-radius:10px;padding:8px 12px;color:#f2ecd8;font-weight:400;font-size:14px}
-#mainMenu .mm-btn{background:#5c7a35;border:2px solid #a8c870;color:#fff;border-radius:8px;padding:6px 12px;font-weight:400;font-size:12px;cursor:pointer;font-family:inherit}
-#mainMenu .mm-btn.off{background:#3a4232;border-color:#55604a;color:#8a9478}
-#mainMenu .mm-start{margin-top:16px;background:#8a6a2a;border-color:#ffd75e;font-size:16px;padding:10px 28px}
-#mainMenu .mm-credit{font-size:10px;color:#6a7a5a;max-width:90vw;margin-top:8px}
-#load{position:fixed;inset:0;background:#141a10;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#ffe9a8;padding:20px;text-align:center}
-#load h1{font-size:42px;letter-spacing:4px;text-shadow:3px 3px 0 #3a4a20;color:#ffd75e;font-weight:400}
-#load p{font-size:13px;color:#a8b890;max-width:90vw}
-#bar{width:240px;height:14px;border:2px solid #8aa860;border-radius:8px;overflow:hidden;background:#20281a}
-#barF{height:100%;width:0%;background:#8ac050;transition:width .2s}
-#offlineBtn{display:none;background:#8a5a2a;border:2px solid #e0a050;color:#fff;border-radius:10px;padding:10px 20px;font-weight:400;font-size:14px;cursor:pointer;font-family:inherit}
-@media (max-width:430px){:root{--sz:40px}}
-@media (max-height:520px){
-  :root{--sz:38px}
-  #joy{width:104px;height:104px;left:12px}
-  #stick{width:46px;height:46px;margin:-23px 0 0 -23px}
-  .abtn{width:54px;height:54px;font-size:10px}
-  #abtnE{width:64px;height:64px}
-  #mini{width:72px;height:72px}
-  #menuBtn{top:calc(100px + env(safe-area-inset-top))}
-  #invBtn{top:calc(148px + env(safe-area-inset-top))}
-  #toast{top:calc(196px + env(safe-area-inset-top));max-width:58vw;font-size:12px}
-  #chips{flex-direction:row;bottom:calc(212px + env(safe-area-inset-bottom));right:12px;max-width:56vw}
-  #hint{bottom:calc(196px + env(safe-area-inset-bottom))}
-  #prompt{bottom:calc(152px + env(safe-area-inset-bottom))}
-}
-/* ================= ПК-версия: крупнее шрифт и слоты ================= */
-@media (min-width:768px){
-  :root{--sz:54px}
-  .pill{font-size:17px;padding:6px 12px;gap:7px}
-  .coin{width:15px;height:15px}
-  #mini{width:128px;height:128px}
-  .tbtn{width:48px;height:48px;font-size:23px}
-  #menuBtn{top:calc(160px + env(safe-area-inset-top))}
-  #invBtn{top:calc(216px + env(safe-area-inset-top))}
-  #toast{top:calc(276px + env(safe-area-inset-top));font-size:17px;max-width:min(70vw,520px);padding:10px 20px}
-  #hint{font-size:15px;max-width:min(46vw,520px);padding:8px 14px;bottom:calc(236px + env(safe-area-inset-bottom))}
-  #prompt{font-size:17px;max-width:min(46vw,520px);padding:8px 16px;bottom:calc(184px + env(safe-area-inset-bottom))}
-  .chip{font-size:20px;padding:7px 12px}
-  .chip b{font-size:15px}
-  #chips{bottom:calc(292px + env(safe-area-inset-bottom));right:20px;gap:8px}
-  .abtn{width:76px;height:76px;font-size:14px}
-  .abtn .ic{font-size:24px}
-  #abtnE{width:88px;height:88px}
-  #joy{width:150px;height:150px}
-  #stick{width:64px;height:64px;margin:-32px 0 0 -32px}
-  #modal{font-size:18px;max-width:680px;padding:20px}
-  #modal h2{font-size:24px}
-  #modal h3{font-size:17px}
-  #modal p{line-height:1.55}
-  .mrow{padding:9px 12px}
-  .mrow .sub,#modal .sub{font-size:14px}
-  .mbtn{font-size:15px;padding:8px 13px}
-  .mclose{font-size:18px;padding:10px 32px}
-  .thumb{width:60px;height:60px}
-  .tag{font-size:13px}
-  .heldname{font-size:15px}
-  .slot .cn{font-size:12px}
-  .slot .lv{font-size:11px}
-  .slot .ph{font-size:12px}
-  .slot.offer .pr{font-size:11px}
-  .slot.offer .pr .coin{width:10px;height:10px}
-  .slot.offer .bn{font-size:12px}
-  #tip{font-size:15px;max-width:340px;padding:8px 11px;line-height:1.5}
-  #mainMenu h1{font-size:46px}
-  #mainMenu .mm-row{font-size:18px;width:min(440px,90vw);padding:10px 14px}
-  #mainMenu .mm-btn{font-size:15px;padding:8px 16px}
-  #mainMenu .mm-start{font-size:20px;padding:12px 34px}
-  #mainMenu .mm-credit{font-size:12px}
-  #load h1{font-size:58px}
-  #load p{font-size:17px}
-  #bar{width:320px;height:18px}
-  #offlineBtn{font-size:17px;padding:12px 24px}
-}
+/* Дополнение к style.css: в главном меню 7 пунктов — на низких экранах оно
+   должно прокручиваться (html,body имеют touch-action:none), а не обрезаться. */
+#mainMenu{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;justify-content:safe center}
 </style>
 </head>
 <body>
@@ -188,10 +54,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a2218;font-family:
 
 <div id="mainMenu">
   <h1>ХУТОРОК</h1>
+  <button class="mm-btn mm-start" id="mmResume">Продолжить</button>
+  <button class="mm-btn mm-start" id="mmNew">Новая игра</button>
+  <button class="mm-btn mm-start" id="mmSave">Сохранить</button>
+  <button class="mm-btn mm-start" id="mmLoad">Загрузить</button>
+  <button class="mm-btn mm-start" id="mmHow">Как играть?</button>
   <div class="mm-row"><span>Звук</span><button class="mm-btn" id="mmSound">Вкл</button></div>
   <div class="mm-row"><span>Подсказки на экране</span><button class="mm-btn" id="mmHints">Вкл</button></div>
-  <button class="mm-btn mm-start" id="mmHow">Как играть</button>
-  <button class="mm-btn mm-start" id="mmResume">Продолжить</button>
   <div class="mm-credit">Шрифт: Pixellari Cyrillic — © YuRaNnNzZZ / zedseven (свободная лицензия)</div>
 </div>
 
@@ -199,7 +68,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a2218;font-family:
   <h1>ХУТОРОК</h1>
   <div id="bar"><div id="barF"></div></div>
   <p id="loadTxt">Загрузка мира…</p>
-  <button id="offlineBtn">🌐 Сеть недоступна — играть офлайн</button>
+  <button id="offlineBtn">🔄 Повторить загрузку</button>
 </div>
 
 <script>
@@ -256,7 +125,6 @@ const FRONT={
 };
 const REAR={plow:{name:'Плуг',power:[25,30,36]},trailer:{name:'Прицеп',power:[10,12,15]},tanker:{name:'Цистерна',power:[14,17,20]}};
 const EQPRICE={seeder:[150,450,1200],waterer:[200,600,1500],weeder:[150,400,1100],header:[300,800,1800],plow:[200,550,1300],trailer:[250,700,1600],tanker:[300,800,1700]};
-const TCOL=['#cf3a2a','#3d434a','#3f8a35','#3f6fb5','#e0902a'];
 
 function normLvl(l){const n=parseInt(l,10);return isNaN(n)?1:Math.max(1,Math.min(3,n));}
 function eqPower(it){const A=FRONT[it.kind]||REAR[it.kind];const p=A.power;return Array.isArray(p)?p[normLvl(it.lvl)-1]:p;}
@@ -418,6 +286,7 @@ function slotCls(it){return it?('t-'+(it.t==='equip'?'equip':it.t)):'';}
 /* ================= АССЕТЫ ================= */
 const IMG={};
 let mapL1=null,mapL2=null,mapCanvas=null,miniReady=false;
+let mapObjects=[],decorObjs=[];
 const TILESETS=[];
 let grassGid=1;
 let loadDone=0,loadTotal=1;
@@ -435,13 +304,31 @@ function loadImgT(k,url){
   });
 }
 async function fetchTMX(){
+  /* Khutorok.tmx ВСЕГДА скачивается заново (и при обычном старте, и при «Новой игре»):
+     уникальный ?v= обходит кэш CDN GitHub, cache:'no-store' — кэш браузера.
+     Поэтому правки карты в репозитории видны сразу, в т.ч. при локальном запуске
+     index.html и в iframe-превью. Если сети нет — берём запасную копию из кэша
+     браузера (она фоном обновляется после каждой удачной загрузки). */
+  const url=GH+'Tileset/Khutorok.tmx';
+  let ctrl=null,to=null;
+  if(typeof AbortController!=='undefined'){ctrl=new AbortController();to=setTimeout(()=>ctrl.abort(),TMX_TIMEOUT);}
+  const opt=mode=>{const o={cache:mode};if(ctrl)o.signal=ctrl.signal;return o;};
+  let txt=null;
   try{
-    let ctrl=null,to=null;
-    if(typeof AbortController!=='undefined'){ctrl=new AbortController();to=setTimeout(()=>ctrl.abort(),TMX_TIMEOUT);}
-    const r=await fetch(GH+'Tileset/Khutorok.tmx',ctrl?{signal:ctrl.signal,cache:'force-cache'}:{cache:'force-cache'});
-    if(to)clearTimeout(to);
-    return r.ok?await r.text():null;
-  }catch(e){return null;}
+    const r=await fetch(url+'?v='+Date.now(),opt('no-store'));
+    if(r.ok)txt=await r.text();
+  }catch(e){}
+  if(txt===null){
+    try{
+      const r2=await fetch(url,opt('force-cache'));
+      if(r2.ok)txt=await r2.text();
+    }catch(e){}
+  }else{
+    /* фон: обновляем кэш обычного URL — запас для офлайн-запуска (не блокирует старт) */
+    try{fetch(url,opt('reload')).catch(()=>{});}catch(e){}
+  }
+  if(to)clearTimeout(to);
+  return txt;
 }
 function parseTMX(txt){
   mapL1=new Uint32Array(MW*MH);mapL2=new Uint32Array(MW*MH);
@@ -459,11 +346,23 @@ function parseTMX(txt){
     for(let i=0;i<mapL1.length;i++){const g=mapL1[i];if(g>0&&g!==WATER_GID)cnt[g]=(cnt[g]||0)+1;}
     let best=1,bc=0;for(const k in cnt)if(cnt[k]>bc){bc=cnt[k];best=+k;}
     grassGid=best;
+    /* Слой объектов TMX: тайл-объекты (здания Buildings.tsx, деревья и т.п.).
+       В TMX y объекта — его НИЖНИЙ край. Объекты без gid пропускаем. */
+    mapObjects=[];
+    const ore=/<object\s[^>]*>/g;
+    let om;
+    while((om=ore.exec(txt))!==null){
+      const tag=om[0];
+      const gm=/gid="(\d+)"/.exec(tag);if(!gm)continue;
+      const gx=/x="(-?[\d.]+)"/.exec(tag),gy=/y="(-?[\d.]+)"/.exec(tag);
+      const gw=/width="([\d.]+)"/.exec(tag),gh=/height="([\d.]+)"/.exec(tag);
+      mapObjects.push({gid:+gm[1],x:gx?+gx[1]:0,y:gy?+gy[1]:0,w:gw?+gw[1]:TS,h:gh?+gh[1]:TS});
+    }
   }catch(e){fillFallback();}
 }
 function fillFallback(){
   mapL1=new Uint32Array(MW*MH);mapL2=new Uint32Array(MW*MH);
-  grassGid=1;
+  grassGid=1;mapObjects=[];decorObjs=[];
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     const n=rnd(x*3.7+y*91.3);
     mapL1[y*MW+x]=n<0.6?1:(n<0.8?2:3);
@@ -488,112 +387,6 @@ function fillFallback(){
     else if(n<0.11)mapL2[y*MW+x]=290;
   }
 }
-function gridCanvas(){const c=document.createElement('canvas');c.width=96;c.height=96;return c;}
-function makeTractorImg(color){
-  const c=gridCanvas(),x=c.getContext('2d');
-  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
-    if(sx===1&&sy===1)continue;
-    x.save();x.translate(sx*32+16,sy*32+17);x.rotate(Math.atan2(sy-1,sx-1));
-    x.fillStyle='#1c1c1c';
-    x.fillRect(-9,-14,9,5);x.fillRect(-9,9,9,5);x.fillRect(6,-11,6,4);x.fillRect(6,7,6,4);
-    x.fillStyle=color;x.fillRect(-11,-8,22,16);
-    x.fillStyle='rgba(255,255,255,.22)';x.fillRect(-11,-8,22,3);
-    x.fillStyle='#2c3e50';x.fillRect(-7,-7,10,14);
-    x.fillStyle='#cfe6f5';x.fillRect(-5,-5,6,10);
-    x.fillStyle=color;x.fillRect(4,-6,8,12);
-    x.fillStyle='#111';x.fillRect(12,-3,2,6);
-    x.fillStyle='#555';x.fillRect(1,-10,2,3);
-    x.restore();
-  }
-  return c;
-}
-function makeBoyImg(){
-  const c=gridCanvas(),x=c.getContext('2d');
-  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
-    const dx=sx-1,dy=sy-1;
-    x.save();x.translate(sx*32+16,sy*32+18);
-    x.fillStyle='#3a4a7a';x.fillRect(-4,4,3,7);x.fillRect(1,4,3,7);
-    x.fillStyle='#c0392b';x.fillRect(-5,-3,10,8);x.fillRect(-7,-2,2,6);x.fillRect(5,-2,2,6);
-    x.fillStyle='#f0c8a0';x.fillRect(-4,-11,8,8);
-    x.fillStyle='#6b4a2c';x.fillRect(-4,-12,8,3);
-    if(dy>0){x.fillStyle='#222';x.fillRect(-3,-8,2,2);x.fillRect(1,-8,2,2);}
-    else if(dy===0){x.fillStyle='#222';x.fillRect(dx>0?1:-3,-8,2,2);}
-    else{x.fillStyle='#6b4a2c';x.fillRect(-4,-11,8,6);}
-    x.restore();
-  }
-  return c;
-}
-function makeVehicleImg(color,type){
-  const c=gridCanvas(),x=c.getContext('2d');
-  for(let sy=0;sy<3;sy++)for(let sx=0;sx<3;sx++){
-    if(sx===1&&sy===1)continue;
-    x.save();x.translate(sx*32+16,sy*32+17);x.rotate(Math.atan2(sy-1,sx-1));
-    x.fillStyle='#1c1c1c';x.fillRect(-7,-12,6,4);x.fillRect(-7,8,6,4);x.fillRect(4,-12,6,4);x.fillRect(4,8,6,4);
-    if(type==='tanker'){
-      x.fillStyle=color;x.beginPath();
-      if(x.roundRect)x.roundRect(-9,-8,19,16,6);else x.rect(-9,-8,19,16);
-      x.fill();
-      x.fillStyle='rgba(255,255,255,.25)';x.fillRect(-7,-6,15,3);
-      x.fillStyle='#3a6aa8';x.fillRect(9,-5,3,10);
-    }else{
-      x.fillStyle='#6b4a2c';x.fillRect(-9,-9,18,18);
-      x.fillStyle=color;x.fillRect(-7,-7,14,14);
-      x.fillStyle='rgba(0,0,0,.2)';x.fillRect(-7,-1,14,2);x.fillRect(-1,-7,2,14);
-    }
-    x.restore();
-  }
-  return c;
-}
-function makeAutotileImg(){
-  const cols=16,rows=16;
-  const c=document.createElement('canvas');c.width=cols*TS;c.height=rows*TS;
-  const x=c.getContext('2d');
-  for(let i=0;i<cols*rows;i++){
-    const sx=(i%cols)*TS,sy=((i/cols)|0)*TS;
-    x.fillStyle=['#5d9a45','#5f9e47','#599341'][i%3];x.fillRect(sx,sy,TS,TS);
-    x.fillStyle='rgba(255,255,255,.07)';
-    for(let j=0;j<7;j++)x.fillRect(sx+((rnd(i*31+j*7)*15)|0),sy+((rnd(i*17+j*13)*15)|0),1,2);
-    x.fillStyle='rgba(0,0,0,.08)';
-    for(let j=0;j<5;j++)x.fillRect(sx+((rnd(i*53+j*3)*15)|0),sy+((rnd(i*29+j*11)*15)|0),2,1);
-  }
-  const paint=(idx,fn)=>fn(x,(idx%cols)*TS,((idx/cols)|0)*TS);
-  paint(WATER_GID-1,(x,sx,sy)=>{x.fillStyle='#3f6fb5';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(255,255,255,.2)';x.fillRect(sx+2,sy+4,7,1);x.fillRect(sx+7,sy+10,7,1);});
-  paint(38,(x,sx,sy)=>{x.fillStyle='#a8875a';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(0,0,0,.12)';for(let j=0;j<8;j++)x.fillRect(sx+((rnd(j*9)*15)|0),sy+((rnd(j*5)*15)|0),2,1);});
-  paint(FIELD_GID-1,(x,sx,sy)=>{x.fillStyle='#7a5636';x.fillRect(sx,sy,TS,TS);x.fillStyle='rgba(0,0,0,.2)';for(let j=0;j<4;j++)x.fillRect(sx,sy+2+j*4,TS,1);});
-  return c;
-}
-function makeNatureImg(){
-  const cols=8,rows=8;
-  const c=document.createElement('canvas');c.width=cols*TS;c.height=rows*TS;
-  const x=c.getContext('2d');
-  const at=i=>[(i%cols)*TS,((i/cols)|0)*TS];
-  let p=at(0);
-  x.fillStyle='#6b4a2c';x.fillRect(p[0]+6,p[1]+9,4,6);
-  x.fillStyle='#2e6b2a';x.beginPath();x.arc(p[0]+8,p[1]+6,6,0,7);x.fill();
-  x.fillStyle='#4a8a3a';x.beginPath();x.arc(p[0]+6,p[1]+4,4,0,7);x.fill();
-  p=at(1);
-  x.fillStyle='#3f7a2a';x.beginPath();x.arc(p[0]+8,p[1]+10,5,0,7);x.fill();
-  x.fillStyle='#54913a';x.beginPath();x.arc(p[0]+6,p[1]+8,3,0,7);x.fill();
-  p=at(2);
-  x.fillStyle='#8d9298';x.beginPath();x.arc(p[0]+8,p[1]+10,5,0,7);x.fill();
-  x.fillStyle='#aeb4ba';x.beginPath();x.arc(p[0]+6,p[1]+8,3,0,7);x.fill();
-  p=at(3);
-  x.fillStyle='#3f7a2a';x.fillRect(p[0]+7,p[1]+8,1,6);x.fillRect(p[0]+4,p[1]+10,1,4);x.fillRect(p[0]+11,p[1]+9,1,5);
-  x.fillStyle='#e05a8a';x.fillRect(p[0]+6,p[1]+6,3,3);
-  x.fillStyle='#ffd75e';x.fillRect(p[0]+3,p[1]+8,3,3);
-  x.fillStyle='#e8e8f0';x.fillRect(p[0]+10,p[1]+7,3,3);
-  return c;
-}
-function ensureFallbacks(){
-  if(!IMG.boy)IMG.boy=makeBoyImg();
-  for(let i=0;i<5;i++){const k='t'+(i+1);if(!IMG[k])IMG[k]=makeTractorImg(TCOL[i]);}
-  if(!IMG.trailer1)IMG.trailer1=makeVehicleImg('#8a6a3f','trailer');
-  if(!IMG.trailer2)IMG.trailer2=makeVehicleImg('#7a5a3a','trailer');
-  if(!IMG.tanker)IMG.tanker=makeVehicleImg('#4f83cc','tanker');
-  if(!IMG.autotile)IMG.autotile=makeAutotileImg();
-  if(!IMG.nature)IMG.nature=makeNatureImg();
-  if(!mapL1)parseTMX(null);
-}
 function finishAssets(){
   TILESETS.length=0;
   const mk=(first,k)=>{
@@ -602,7 +395,7 @@ function finishAssets(){
     const rows=im?Math.max(1,Math.floor(IH(im)/TS)):16;
     return{first,key:k,cols,rows,count:cols*rows};
   };
-  TILESETS.push(mk(1,'autotile'),mk(232,'floor'),mk(287,'nature'));
+  TILESETS.push(mk(1,'autotile'),mk(232,'floor'),mk(287,'nature'),mk(539,'crops'));
   TILESETS[0].count=Math.min(TILESETS[0].count,231);
   TILESETS[1].count=Math.min(TILESETS[1].count,55);
   buildTerrainCanvas();
@@ -659,7 +452,11 @@ async function loadAssets(){
     ['t1',GH+'Sprites/tractor_1.png'],['t2',GH+'Sprites/tractor_2.png'],['t3',GH+'Sprites/tractor_3.png'],
     ['t4',GH+'Sprites/tractor_4.png'],['t5',GH+'Sprites/tractor_5.png'],
     ['trailer1',GH+'Sprites/trailer_1.png'],['trailer2',GH+'Sprites/trailer2.png'],
-    ['tanker',GH+'Sprites/tanker_1.png']
+    ['tanker',GH+'Sprites/tanker_1.png'],
+    ['crops',GH+'Tileset/Crops_Tileset.png'],
+    ['bld_barn',GH+'Tileset/barn.png'],['bld_garage',GH+'Tileset/garage.png'],
+    ['bld_shopA',GH+'Tileset/addon_store.png'],['bld_shopF',GH+'Tileset/farmers_store.png'],
+    ['bld_dealer',GH+'Tileset/tractor_store.png']
   ];
   loadTotal=list.length+1;loadDone=0;
   const ps=list.map(([k,u])=>loadImgT(k,u).then(()=>{prog();}));
@@ -667,61 +464,19 @@ async function loadAssets(){
   await Promise.all(ps.concat([tmxP]));
 }
 
-/* ================= ЗДАНИЯ ================= */
-function bldCanvas(type,W,H){
-  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-  const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(Math.round(a),Math.round(b),Math.round(w),Math.round(h));};
-  x.fillStyle='rgba(0,0,0,.22)';x.beginPath();x.ellipse(W/2,H-3,W*0.46,5,0,0,7);x.fill();
-  if(type==='barn'){
-    R(4,H*.44,W-8,H*.54,'#9c352a');
-    for(let i=1;i<6;i++)R(4+i*(W-8)/6,H*.44,1,H*.54,'rgba(0,0,0,.14)');
-    x.fillStyle='#4c4c58';x.beginPath();x.moveTo(0,H*.47);x.lineTo(W/2,2);x.lineTo(W,H*.47);x.closePath();x.fill();
-    x.fillStyle='rgba(0,0,0,.18)';for(let yy=8;yy<H*.46;yy+=6)x.fillRect(W/2-yy,yy,yy*2,1);
-    R(0,H*.45,W,3,'#35353f');
-    R(W/2-7,H*.16,14,15,'#7c2a20');R(W/2-1,H*.16,2,15,'#efe3c8');
-    R(W/2-11,H*.62,22,H*.36,'#5e3a1e');R(W/2-1,H*.62,2,H*.36,'#3d2712');
-    x.strokeStyle='#efe3c8';x.lineWidth=2;x.strokeRect(W/2-12,H*.61,24,H*.37);
-    R(9,H*.55,10,10,'#cfe6f5');R(13,H*.55,2,10,'#7a5a3a');R(9,H*.59,10,2,'#7a5a3a');
-    R(W-19,H*.55,10,10,'#cfe6f5');R(W-15,H*.55,2,10,'#7a5a3a');R(W-19,H*.59,10,2,'#7a5a3a');
-  } else if(type==='garage'){
-    R(3,H*.34,W-6,H*.64,'#98604a');
-    x.fillStyle='rgba(0,0,0,.15)';for(let yy=Math.round(H*.36);yy<H*.96;yy+=6)for(let xx=3;xx<W-3;xx+=10)x.fillRect(xx+((yy/6|0)%2)*5,yy,9,1);
-    R(0,H*.22,W,H*.14,'#55606a');R(0,H*.2,W,4,'#3d454d');
-    R(W*.18,H*.48,W*.64,H*.5,'#23262c');
-    x.fillStyle='#3a3f47';for(let yy=Math.round(H*.5);yy<H*.96;yy+=5)x.fillRect(W*.18,yy,W*.64,2);
-    R(W*.06,H*.55,W*.09,H*.43,'#4a3524');
-    R(W*.86,H*.4,7,7,'#ffd75e');
-  } else if(type==='shopA'){
-    R(3,H*.38,W-6,H*.6,'#b9a06a');
-    x.fillStyle='#3f7a45';x.beginPath();x.moveTo(0,H*.4);x.lineTo(W/2,2);x.lineTo(W,H*.4);x.closePath();x.fill();
-    R(0,H*.38,W,3,'#2e5c33');
-    for(let i=0;i<6;i++)R(4+i*(W-8)/6,H*.4,(W-8)/6-2,H*.1,i%2?'#e8e4d0':'#3f7a45');
-    R(W*.12,H*.58,W*.2,H*.16,'#cfe6f5');R(W*.68,H*.58,W*.2,H*.16,'#cfe6f5');
-    R(W*.42,H*.66,W*.16,H*.32,'#5e3a1e');
-    R(6,H*.82,12,10,'#7a5a3a');R(9,H*.78,6,5,'#9a7b4f');
-    R(W-18,H*.8,12,12,'#6a6f76');R(W-15,H*.74,6,7,'#c9a227');
-  } else if(type==='shopF'){
-    R(3,H*.38,W-6,H*.6,'#c8b287');
-    x.fillStyle='#3f5f9a';x.beginPath();x.moveTo(0,H*.4);x.lineTo(W/2,2);x.lineTo(W,H*.4);x.closePath();x.fill();
-    R(0,H*.38,W,3,'#2c4470');
-    for(let i=0;i<6;i++)R(4+i*(W-8)/6,H*.4,(W-8)/6-2,H*.1,i%2?'#e8e4d0':'#3f5f9a');
-    R(W*.1,H*.56,W*.24,H*.18,'#cfe6f5');R(W*.66,H*.56,W*.24,H*.18,'#cfe6f5');
-    R(W*.42,H*.66,W*.16,H*.32,'#6b4a2e');
-    R(5,H*.84,14,9,'#7a5a3a');x.fillStyle='#e08b2e';for(let i=0;i<4;i++)x.fillRect(7+i*3,H*.81,2,4);
-    R(W-19,H*.84,14,9,'#7a5a3a');x.fillStyle='#e2762f';x.beginPath();x.arc(W-12,H*.83,4,0,7);x.fill();
-  } else if(type==='dealer'){
-    R(2,H*.25,W-4,H*.72,'#5b5f66');
-    x.fillStyle='rgba(255,255,255,.14)';for(let xx=8;xx<W-8;xx+=14)x.fillRect(xx,H*.88,8,2);
-    x.strokeStyle='#e8e4d0';x.lineWidth=2;x.strokeRect(3,H*.26,W-6,H*.7);
-    for(let xx=3;xx<W-2;xx+=12)R(xx,H*.22,3,8,'#e8e4d0');
-    R(W*.3,H*.3,W*.4,H*.34,'#8a6a4a');
-    R(W*.28,H*.2,W*.44,H*.13,'#7a4a3a');
-    R(W*.4,H*.42,W*.2,H*.2,'#cfe6f5');
-    x.fillStyle='#d84040';x.fillRect(W*.78,H*.05,2,H*.2);
-    x.beginPath();x.moveTo(W*.78+2,H*.05);x.lineTo(W*.78+14,H*.09);x.lineTo(W*.78+2,H*.13);x.closePath();x.fill();
-  }
-  return c;
-}
+/* ================= ЗДАНИЯ =================
+   Процедурная отрисовка зданий удалена: используются готовые PNG из Tileset/
+   и слой объектов TMX («Слой объектов 1», тайлсет Buildings.tsx, firstgid 713):
+   713 addon_store → Сельхозапгрейд, 714 farmers_store → Всё для фермера,
+   715 garage → Гараж, 716 barn → Амбар, 717 tractor_store → Твой первый трактор.
+   Координаты тайл-объекта TMX — по НИЖНЕМУ левому углу: ty=(y-h)/TS. */
+const BLD_GID={
+  713:{id:'shopA', name:'Сельхозапгрейд',     img:'bld_shopA'},
+  714:{id:'shopF', name:'Всё для фермера',    img:'bld_shopF'},
+  715:{id:'garage',name:'Гараж',              img:'bld_garage'},
+  716:{id:'barn',  name:'Амбар',              img:'bld_barn'},
+  717:{id:'dealer',name:'Твой первый трактор',img:'bld_dealer'}
+};
 
 /* ================= СОСТОЯНИЕ ================= */
 let S=null;
@@ -749,15 +504,43 @@ function serializeSoil(){
   for(const k in S.soil){const s=S.soil[k];soil[k]=[s.weed?1:0,s.herb,s.crop?[s.crop.type,s.crop.g,s.crop.watered?1:0,s.crop.fert?1:0]:0];}
   return soil;
 }
+function serializeState(){
+  const trs=S.tractors.map(t=>{
+    const c=Object.assign({},t);
+    delete c._fx;delete c._fy;delete c._rx;delete c._ry;delete c._trl;
+    return c;
+  });
+  /* v7: тракторы сохраняются вместе со своими x/y/dx/dy/face/down (были и раньше),
+     дополнительно — игрок пешком (bx,by,bf) и «за рулём» (rd = индекс трактора). */
+  return {v:7,m:S.money,d:S.day,t:S.t,r:S.rain?1:0,gar:S.garage,tr:trs,soil:serializeSoil(),hs:S.helpShown,
+          bx:boy.x,by:boy.y,bf:boy.face,rd:riding};
+}
 function save(){
+  try{localStorage.setItem('khutorok2',JSON.stringify(serializeState()));}catch(e){}
+}
+/* ===== Ручные сохранения: 10 слотов (khutorok2_slot1..khutorok2_slot10) =====
+   Автосохранение (khutorok2, кнопка «Продолжить») работает отдельно: каждые
+   30 с, при сворачивании вкладки и после загрузки из слота. */
+function slotKey(n){return 'khutorok2_slot'+n;}
+function saveToSlot(n){
   try{
-    const trs=S.tractors.map(t=>{
-      const c=Object.assign({},t);
-      delete c._fx;delete c._fy;delete c._rx;delete c._ry;delete c._trl;
-      return c;
-    });
-    localStorage.setItem('khutorok2',JSON.stringify({v:6,m:S.money,d:S.day,t:S.t,r:S.rain?1:0,gar:S.garage,tr:trs,soil:serializeSoil(),hs:S.helpShown}));
-  }catch(e){}
+    const data=serializeState();
+    data.savedAt=Date.now();
+    localStorage.setItem(slotKey(n),JSON.stringify(data));
+    return true;
+  }catch(e){return false;}
+}
+function slotMeta(n){
+  try{
+    const j=JSON.parse(localStorage.getItem(slotKey(n)));
+    if(!j||typeof j.d!=='number')return null;
+    return{d:j.d,m:j.m,ts:j.savedAt||0};
+  }catch(e){return null;}
+}
+function fmtTs(ts){
+  if(!ts)return'без даты';
+  const dt=new Date(ts),p=v=>String(v).padStart(2,'0');
+  return p(dt.getDate())+'.'+p(dt.getMonth()+1)+'.'+dt.getFullYear()+' '+p(dt.getHours())+':'+p(dt.getMinutes());
 }
 function sanitizeItem(it){
   if(!it||it.t!=='equip')return it;
@@ -797,19 +580,26 @@ function compactGarage(g){
   for(let i=0;i<Math.min(src.length,GARAGE_SLOTS);i++)out[i]=sanitizeItem(src[i])||src[i];
   return out;
 }
-function loadSave(){
+/* Отложенные данные игрока из сейва: применяются в applyLoadedState() */
+let pendBoy=null,pendRiding=null;
+function loadSaveFrom(keyName){
   try{
-    const j=JSON.parse(localStorage.getItem('khutorok2'));
+    const j=JSON.parse(localStorage.getItem(keyName));
     if(!j)return false;
-    if(j.v===4||j.v===5||j.v===6){
+    if(j.v===4||j.v===5||j.v===6||j.v===7){
       S={money:j.m,day:j.d,t:j.t,rain:!!j.r,garage:compactGarage(j.gar),tractors:j.tr,soil:{},helpShown:j.hs};
       for(const tr of S.tractors)sanitizeTractor(tr);
-    }else if(j.v===1||j.v===2||j.v===3){migrateOld(j);}
+      /* v7: позиция игрока пешком и флаг «за рулём»; в старых версиях их нет —
+         тогда игрок будет поставлен у первого трактора. */
+      pendBoy=(typeof j.bx==='number'&&typeof j.by==='number')?{x:j.bx,y:j.by,face:Array.isArray(j.bf)?j.bf:[1,2]}:null;
+      pendRiding=(typeof j.rd==='number'&&j.rd>=0&&j.rd<S.tractors.length)?j.rd:null;
+    }else if(j.v===1||j.v===2||j.v===3){migrateOld(j);pendBoy=null;pendRiding=null;}
     else return false;
     for(const k in (j.soil||{})){const a=j.soil[k];S.soil[k]={weed:!!a[0],herb:a[1]||0,crop:a[2]?{type:a[2][0],g:a[2][1],watered:!!a[2][2],fert:!!a[2][3]}:null};}
     return true;
   }catch(e){return false;}
 }
+function loadSave(){return loadSaveFrom('khutorok2');}
 function migrateOld(j){
   S={money:j.m+(j.v<3?100000:0),day:j.d,t:j.t,rain:!!j.r,garage:new Array(GARAGE_SLOTS).fill(null),tractors:[],soil:{},helpShown:j.hs};
   let gi=0;
@@ -899,27 +689,39 @@ function findDrySpot(tx,ty,w,h){
   return{tx,ty};
 }
 function setupWorld(){
+  buildings=[];decorObjs=[];
+  /* Здания — тайл-объекты слоя объектов TMX (gid 713..717, Buildings.tsx).
+     Остальные объекты (деревья и др. декор) — в decorObjs, рисуются без коллизий. */
+  for(const o of mapObjects){
+    const d=BLD_GID[o.gid];
+    if(d){
+      const im=IMG[d.img];
+      const w=o.w||IW(im),h=o.h||IH(im);
+      buildings.push({id:d.id,name:d.name,img:im,tx:o.x/TS,ty:(o.y-h)/TS,w:w/TS,h:h/TS});
+    }else decorObjs.push(o);
+  }
+  if(buildings.length)return;
+  /* Фолбэк: слой объектов не загрузился (старый кэш TMX) — расставляем те же
+     PNG-здания вокруг точки появления и чистим под ними декорации тайлового слоя. */
   const sx=spawn.x,sy=spawn.y;
   const clampT=(v,w)=>Math.max(1,Math.min(MW-w-1,v));
   const defs=[
-    {id:'barn',name:'Амбар',tx:clampT(sx-13,7),ty:clampT(sy-11,6),w:7,h:6,type:'barn'},
-    {id:'garage',name:'Гараж',tx:clampT(sx+4,5),ty:clampT(sy-10,5),w:5,h:5,type:'garage'},
-    {id:'shopA',name:'Сельхозапгрейд',tx:clampT(sx+42,6),ty:clampT(sy-9,5),w:6,h:5,type:'shopA'},
-    {id:'shopF',name:'Всё для фермера',tx:clampT(sx+52,6),ty:clampT(sy-9,5),w:6,h:5,type:'shopF'},
-    {id:'dealer',name:'Твой первый трактор',tx:clampT(sx+42,8),ty:clampT(sy,6),w:8,h:6,type:'dealer'}
+    {gid:716,tx:clampT(sx-13,8), ty:clampT(sy-12,8)},
+    {gid:715,tx:clampT(sx+4,9),  ty:clampT(sy-12,8)},
+    {gid:713,tx:clampT(sx+42,16),ty:clampT(sy-12,16)},
+    {gid:714,tx:clampT(sx+60,9), ty:clampT(sy-12,8)},
+    {gid:717,tx:clampT(sx+42,16),ty:clampT(sy+4,16)}
   ];
-  buildings=[];
   for(const d of defs){
-    const sp=findDrySpot(d.tx,d.ty,d.w,d.h);
-    d.tx=sp.tx;d.ty=sp.ty;
-    d.img=bldCanvas(d.type,d.w*TS,d.h*TS);
-    buildings.push(d);
+    const info=BLD_GID[d.gid],im=IMG[info.img];
+    const w=Math.round(IW(im)/TS)||8,h=Math.round(IH(im)/TS)||8;
+    const sp=findDrySpot(d.tx,d.ty,w,h);
+    buildings.push({id:info.id,name:info.name,img:im,tx:sp.tx,ty:sp.ty,w,h});
+    for(let yy=sp.ty-1;yy<=sp.ty+h;yy++)for(let xx=sp.tx-1;xx<=sp.tx+w;xx++){
+      if(xx>=0&&yy>=0&&xx<MW&&yy<MH)mapL2[yy*MW+xx]=0;
+    }
+    refreshTerrainRect(sp.tx-1,sp.ty-1,w+2,h+2);
   }
-  const clear=(x0,y0,w,h)=>{
-    for(let yy=y0-1;yy<=y0+h;yy++)for(let xx=x0-1;xx<=x0+w;xx++){if(xx>=0&&yy>=0&&xx<MW&&yy<MH)mapL2[yy*MW+xx]=0;}
-    refreshTerrainRect(x0-1,y0-1,w+2,h+2);
-  };
-  for(const b of buildings)clear(b.tx,b.ty,b.w,b.h);
 }
 function zoneOf(b){return{x:(b.tx+b.w/2)*TS,y:(b.ty+b.h+1.1)*TS,r:2.8*TS};}
 function nearGarage(){
@@ -960,6 +762,16 @@ function moveEnt(e,dx,dy,hw,hh){
   e.y+=dy;if(hitSolid(e,hw,hh))e.y-=dy;
   e.x=Math.max(10,Math.min(MW*TS-10,e.x));
   e.y=Math.max(10,Math.min(MH*TS-10,e.y));
+}
+function findFreeSpot(x,y,hw,hh){
+  if(!hitSolid({x,y},hw,hh))return{x,y};
+  for(let r=TS;r<=TS*20;r+=TS){
+    for(let a=0;a<8;a++){
+      const nx=x+r*Math.cos(a*Math.PI/4),ny=y+r*Math.sin(a*Math.PI/4);
+      if(!hitSolid({x:nx,y:ny},hw,hh))return{x:nx,y:ny};
+    }
+  }
+  return{x,y};
 }
 
 /* ================= ТРАКТОР/ГРУЗ ================= */
@@ -1239,20 +1051,6 @@ function cLen(c){
   if(c.kind==='offer')return curOffers.length;
   return c.arr.length;
 }
-function countSpace(item,list){
-  let sp=0;
-  for(const c of list){
-    const len=cLen(c);
-    for(let i=0;i<len;i++){
-      const ex=cSlot(c,i);
-      const cap=capFor(c,i,item);
-      if(cap<=0)continue;
-      if(!ex)sp+=cap;
-      else if(sameStack(ex,item))sp+=Math.max(0,cap-ex.n);
-    }
-  }
-  return sp;
-}
 function placeItem(item,list){
   for(const c of list){
     const len=cLen(c);
@@ -1271,7 +1069,6 @@ function placeItem(item,list){
 let HELD=null,heldFrom=null,heldOffer=null,dragging=false,handledInDown=false,downXY=null,lastPtr={x:0,y:0},invMode=null,curOffers=[];
 const modalWrap=$('modalWrap');
 const modalEl=$('modal');
-const modalEI=modalEl;
 const heldEl=$('heldEl');
 const tipEl=$('tip');
 let tipTO=null;
@@ -1778,7 +1575,25 @@ modalEl.addEventListener('click',e=>{
 function handleCmd(c){
   if(c.a==='closeInv'){closeModalInv();return;}
   if(c.a==='close'){closeModal();return;}
-  if(c.a==='reset'){localStorage.removeItem('khutorok2');location.reload();return;}
+  if(c.a==='slotsClose'){closeModal();toggleMainMenu(true);return;}
+  if(c.a==='slotSave'){
+    if(saveToSlot(c.i)){sfxCoin();toast('💾 Сохранено в слот '+c.i);}
+    else{toast('⚠ Не удалось сохранить: хранилище браузера недоступно или переполнено');sfx(160,.12);}
+    openSlots(slotsMode);return;
+  }
+  if(c.a==='slotLoad'){
+    if(!loadSaveFrom(slotKey(c.i))){toast('⚠ Не удалось прочитать слот '+c.i);sfx(160,.12);openSlots(slotsMode);return;}
+    applyLoadedState();
+    HELD=null;BASKET=null;heldOffer=null;heldFrom=null;invMode=null;
+    floats.length=0;particles.length=0;smokes.length=0;chipSig='~';
+    closeModal();toggleMainMenu(false);
+    updateChips(true);save();
+    sfxCoin();toast('📂 Загружено из слота '+c.i);return;
+  }
+  if(c.a==='slotDel'){
+    try{localStorage.removeItem(slotKey(c.i));}catch(e){}
+    sfx(220,.08);toast('Слот '+c.i+' очищен');openSlots(slotsMode);return;
+  }
   if(c.a==='buyTr'){
     const T=TRACTORS[c.i];
     if(S.tractors.some(tr=>tr.tid===c.i))return;
@@ -1835,32 +1650,41 @@ function openDealer(){
   h+='<button class="mclose" data-cmd=\'{"a":"close"}\'>Выйти</button>';
   openModalRaw(h);
 }
+/* Справка «Как играть» загружается из внешнего файла guide.html (репозиторий),
+   кэшируется в памяти (GUIDE_HTML) и браузером (cache:'force-cache').
+   Титры шрифта и кнопка закрытия добавляются кодом (guideFooter). */
+let GUIDE_HTML=null;
+function guideFooter(){
+  return `<p class="sub" style="margin-top:8px">Шрифт: Pixellari Cyrillic — © YuRaNnNzZZ / zedseven (свободная лицензия).</p>
+  <button class="mclose" data-cmd='{"a":"close"}'>Играть!</button>`;
+}
+async function fetchGuide(){
+  if(GUIDE_HTML)return GUIDE_HTML;
+  try{
+    let ctrl=null,to=null;
+    if(typeof AbortController!=='undefined'){ctrl=new AbortController();to=setTimeout(()=>ctrl.abort(),8000);}
+    const r=await fetch(GH+'guide.html',ctrl?{signal:ctrl.signal,cache:'force-cache'}:{cache:'force-cache'});
+    if(to)clearTimeout(to);
+    if(r.ok){
+      const t=(await r.text()).trim();
+      if(t)GUIDE_HTML=t;
+    }
+  }catch(e){}
+  return GUIDE_HTML;
+}
+function helpFallbackHTML(){
+  return '<h2>🌻 Хуторок — как играть</h2>'+
+    '<p class="sub" style="text-align:center">⚠ Не удалось загрузить справку (нет сети или файл guide.html недоступен).<br>Попробуйте открыть её позже.</p>'+
+    guideFooter();
+}
 function openHelp(){
   invMode='help';
-  openModalRaw(`<h2>🌻 Хуторок — как играть</h2>
-  <p style="line-height:1.5">Вы — фермер: ферма с амбаром и гаражом, <b>100 000 монет</b> (тестовый бюджет) и трактор <b>Кубона</b>. В гараже лежит всё навесное 1 уровня и немного семян.</p>
-  <h3>🎒 Инвентарь (как в Minecraft)</h3>
-  <p style="line-height:1.5">Кнопка <b>🎒</b> (или гараж/магазины) открывает инвентарь. Предметы <b>перетаскиваются</b> между слотами одним движением пальца/мыши; на телефоне работает и тап-взять → тап-положить. Если отпустить палец мимо слота — предмет попадёт в ближайший подходящий слот или вернётся на место.</p>
-  <p style="line-height:1.5"><b>Разделение стака</b> (только в инвентаре): перетащите стак в слот <b>½</b> (или возьмите в руку и нажмите <b>½</b>) — он разделится на два: половина останется в руке, половина вернётся в исходный слот, общее количество не меняется. Shift + клик по слоту — взять половину сразу. <b>🧺 Корзина</b> — временный слот, очищается при закрытии.</p>
-  <p style="line-height:1.5"><b>Стакование:</b> семена — 100, урожай — 10, жидкости — 100 (в гараже), оборудование — 1 шт. <b>Жидкости — только в цистерне или гараже</b>, без смешивания. <b>Прицеп</b> не перевозит жидкости, прицепы и цистерны. <b>Гараж (4×8)</b> доступен только рядом с гаражом.</p>
-  <h3>🚜 Физика прицепа</h3>
-  <p style="line-height:1.5">Прицеп и цистерна соединены с трактором <b>шарниром через фаркоп</b>: на поворотах прицеп поворачивает вслед за трактором и <b>повторяет его траекторию</b>, срезая дугу, а при движении задним ходом реалистично «складывается».</p>
-  <h3>⚙️ Уровни навесного — на что влияют</h3>
-  <p style="line-height:1.5"><b>Ширина обработки за проход:</b> сеялка/поливалка/пропольник/жатка и плуг — ур.1: <b>1 тайл</b>, ур.2: <b>2 тайла</b>, ур.3: <b>3 тайла</b>. При опущенном навесном (F) на земле видна <b>подсвеченная полоса</b> обрабатываемых тайлов (жёлтая — переднее навесное, коричневая — плуг).<br>
-  <b>Прицеп:</b> 4/8/12 слотов. <b>Цистерна:</b> 40/80/150 л.<br>
-  <b>Расход мощности растёт с уровнем</b> (плуг 25/30/36 лс, жатка 18/22/28 лс и т.д.).<br>
-  <i>Совет:</i> сеялка/поливалка/жатка работают только по вспаханным тайлам — чтобы увидеть ширину 2-3 тайла, сначала вспашите широкую полосу плугом того же уровня.</p>
-  <h3>🏪 Покупка и продажа</h3>
-  <p style="line-height:1.5"><b>Покупка перетаскиванием</b>: возьмите товар с витрины (сетка 8 слотов) и перенесите в свободный слот. Оборудование — только в слоты трактора (перед/фаркоп); семена и жидкости — в прицеп/цистерну/гараж. Тап по товару показывает описание до покупки. Продать оборудование (50%) — перетащите в слот 💰 в «Сельхозапгрейде». Тракторы — на площадке «Твой первый трактор» (продажа за полцены).</p>
-  <h3>🌾 Цикл урожая</h3>
-  <p style="line-height:1.5">Плуг на фаркоп → вспашите <b>тайлы поля</b> (тёмная земля) → семена в прицеп → сеялка вперёд → посев → полив (цистерна набирает воду у водоёма ✋), прополка, удобрение (+50%) → жатка собирает урожай в прицеп → <b>Амбар</b>: ✋ Сдать урожай. Гербицидная обработка сохраняется после сбора.</p>
-  <h3>🕹 Управление</h3>
-  <p style="line-height:1.5">Джойстик/WASD — движение (8 направлений). 🚪 — сесть/выйти, ✋ — действие, <b>⬇️(F)</b> — опустить/поднять навесное <b>текущего трактора</b> (работает только в движении). ПК: E/Q/F, I — инвентарь, 1-3 — культура, Z/X/C — жидкость поливалки, Esc — меню. Кнопка <b>☰</b> — главное меню (звук, подсказки, справка).</p>
-  <h3>📅 Прочее</h3>
-  <p style="line-height:1.5">День = <b>6 минут</b> (час = 15 сек). Пшеница 1 день, морковь 2, тыква 3 (растут только политые и без сорняков). Дождь поливает сам, с молниями и кругами на земле. Ночью светят фары, из выхлопной идёт дым. Вода непроходима. Свободная мощность &lt; 60 лс → скорость = остаток (мин. 5 км/ч).</p>
-  <p class="sub" style="margin-top:8px">Шрифт: Pixellari Cyrillic — © YuRaNnNzZZ / zedseven (свободная лицензия).</p>
-  <button class="mbtn red" style="display:block;margin:10px auto" data-cmd='{"a":"reset"}'>Сбросить сохранение</button>
-  <button class="mclose" data-cmd='{"a":"close"}'>Играть!</button>`);
+  if(GUIDE_HTML){openModalRaw(GUIDE_HTML+guideFooter());return;}
+  openModalRaw('<h2>🌻 Хуторок — как играть</h2><p class="sub" style="text-align:center">Загрузка справки…</p>');
+  fetchGuide().then(html=>{
+    if(!modalOpen||invMode!=='help')return;
+    openModalRaw(html?html+guideFooter():helpFallbackHTML());
+  });
 }
 $('invBtn').addEventListener('click',()=>{if(modalOpen&&invMode&&invMode!=='help')closeModalInv();else openInventory();});
 
@@ -1876,7 +1700,66 @@ $('mmSound').addEventListener('click',()=>{SETTINGS.sound=!SETTINGS.sound;saveSe
 $('mmHints').addEventListener('click',()=>{SETTINGS.hints=!SETTINGS.hints;saveSettings();applySettingsUI();});
 $('mmHow').addEventListener('click',()=>{toggleMainMenu(false);openHelp();});
 $('mmResume').addEventListener('click',()=>toggleMainMenu(false));
+/* «Новая игра» БЕЗ перезагрузки страницы — работает и при локальном запуске
+   (file://), и в iframe-превью, где location.reload()/storage могут быть
+   недоступны. Мир заново скачивается из Khutorok.tmx и пересобирается на месте. */
+$('mmNew').addEventListener('click',()=>{startNewGame();});
+$('mmSave').addEventListener('click',()=>{toggleMainMenu(false);openSlots('save');});
+$('mmLoad').addEventListener('click',()=>{toggleMainMenu(false);openSlots('load');});
 applySettingsUI();
+
+/* ================= СЛОТЫ СОХРАНЕНИЙ (10 шт.) ================= */
+let slotsMode='save';
+function openSlots(mode){
+  slotsMode=mode;
+  invMode='slots';
+  let h=mode==='save'?'<h2>💾 Сохранить игру</h2>':'<h2>📂 Загрузить игру</h2>';
+  h+=mode==='save'
+    ? '<p class="sub" style="margin-bottom:6px">10 слотов. Запись в занятый слот перезаписывает его.</p>'
+    : '<p class="sub" style="margin-bottom:6px">Текущий прогресс (и автосохранение) будет заменён выбранным слотом.</p>';
+  for(let n=1;n<=10;n++){
+    const meta=slotMeta(n);
+    const info=meta?`День ${meta.d} • ${meta.m} ${COIN} • ${fmtTs(meta.ts)}`:'пусто';
+    let btns=mode==='save'
+      ? `<button class="mbtn" data-cmd='{"a":"slotSave","i":${n}}'>${meta?'Перезаписать':'Сохранить'}</button>`
+      : (meta?`<button class="mbtn" data-cmd='{"a":"slotLoad","i":${n}}'>Загрузить</button>`:'<button class="mbtn" disabled>Загрузить</button>');
+    if(meta)btns+=`<button class="mbtn red" style="margin-left:4px" data-cmd='{"a":"slotDel","i":${n}}'>✕</button>`;
+    h+=`<div class="mrow"><div class="inf"><b>Слот ${n}</b><br><span class="sub">${info}</span></div><div style="display:flex;align-items:center">${btns}</div></div>`;
+  }
+  h+=`<button class="mclose" data-cmd='{"a":"slotsClose"}'>Назад в меню</button>`;
+  openModalRaw(h);
+}
+
+/* ================= НОВАЯ ИГРА (на месте, без reload) ================= */
+let newGameBusy=false;
+async function startNewGame(){
+  if(newGameBusy)return;
+  newGameBusy=true;
+  toast('🌱 Новая игра: обновляю мир…');
+  /* стираем автосохранение; если хранилище недоступно (file:///iframe) —
+     не страшно: состояние всё равно заменяется в памяти */
+  try{localStorage.removeItem('khutorok2');}catch(e){}
+  /* мир ВСЕГДА перечитывается из свежего Khutorok.tmx */
+  const txt=await fetchTMX();
+  parseTMX(txt);
+  try{finishAssets();}catch(e){}
+  findSpawn();
+  setupWorld();
+  rebuildWorldSprites();
+  S=newGame();
+  selCrop='wheat';selMode='water';
+  HELD=null;BASKET=null;heldOffer=null;heldFrom=null;invMode=null;
+  floats.length=0;particles.length=0;smokes.length=0;
+  flash=0;chipSig='~';
+  pendBoy=null;pendRiding=null;
+  applyLoadedState();
+  closeModal();
+  toggleMainMenu(false);
+  updateChips(true);
+  save();
+  newGameBusy=false;
+  sfxCoin();toast('🌱 Новая игра создана!');
+}
 
 /* ================= КОНТЕКСТ ДЕЙСТВИЙ ================= */
 function playerEnt(){return riding!==null?S.tractors[riding]:boy;}
@@ -2084,7 +1967,12 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyC')selMode='herb';
   if(e.code==='Escape'){
     if(menuVisible()){toggleMainMenu(false);return;}
-    if(modalOpen){if(invMode==='inv'||invMode==='shopA'||invMode==='shopF')closeModalInv();else closeModal();return;}
+    if(modalOpen){
+      if(invMode==='inv'||invMode==='shopA'||invMode==='shopF')closeModalInv();
+      else if(invMode==='slots'){closeModal();toggleMainMenu(true);}
+      else closeModal();
+      return;
+    }
     toggleMainMenu(true);
   }
   if(!modalOpen&&!menuVisible())updateChips(true);
@@ -2101,7 +1989,7 @@ function keyVec(){
 
 /* ================= ОБНОВЛЕНИЕ ================= */
 function update(dt){
-  if(modalOpen||menuVisible())return;
+  if(modalOpen||menuVisible()||newGameBusy)return;
   S.t+=dt;
   if(S.t>=DAY_SEC){S.t-=DAY_SEC;newDay();}
   const v=keyVec();
@@ -2171,6 +2059,7 @@ const TEX={impl:{},plow:{}};
 const CELLS={};
 const soilSprites=new Map(),SOIL_TEX=new Map();
 let vehList=[],bldLabels=[],screenDirty=true;
+let bldSprites=[],decorSprites=[];
 
 function sheetCells(img){
   const base=PIXI.Texture.from(img);
@@ -2296,6 +2185,53 @@ function mkText(str,size,fill,bg){
   t.anchor.set(0.5,1);
   return t;
 }
+/* Спрайты зданий и декораций слоя объектов TMX (деревья и т.п.).
+   Вынесено в функцию, чтобы пересобирать мир при «Новой игре» без перезагрузки.
+   Декор: gid разрешается через tileInfo (Nature/Crops тайлсеты), без коллизий;
+   zIndex по нижнему краю — корректное перекрытие с игроком/трактором. */
+function addBuildingSprites(){
+  bldSprites=[];decorSprites=[];bldLabels=[];
+  for(const b of buildings){
+    const spr=new PIXI.Sprite(nearestTex(PIXI.Texture.from(b.img)));
+    spr.position.set(b.tx*TS,b.ty*TS);
+    spr.width=b.w*TS;spr.height=b.h*TS;
+    spr.zIndex=(b.ty+b.h)*TS;
+    entC.addChild(spr);
+    bldSprites.push(spr);
+    const lb=mkText(b.name,TXT_SZ.bld,0xffe9a8,'rgba(0,0,0,0.65)');
+    labelC.addChild(lb);
+    bldLabels.push({lb,b});
+  }
+  for(const o of decorObjs){
+    const ti=tileInfo(o.gid);
+    if(!ti)continue;
+    const bt=PIXI.Texture.from(ti.im);
+    const spr=new PIXI.Sprite(nearestTex(new PIXI.Texture(bt.baseTexture,new PIXI.Rectangle(ti.sx,ti.sy,TS,TS))));
+    spr.position.set(o.x,o.y-o.h);
+    spr.width=o.w;spr.height=o.h;
+    spr.zIndex=o.y;
+    entC.addChild(spr);
+    decorSprites.push(spr);
+  }
+}
+/* Пересборка мира в живой сцене (после перечитывания Khutorok.tmx):
+   старые спрайты зданий/декора/террейна удаляются, создаются новые. */
+function rebuildWorldSprites(){
+  if(!entC||!terrainSpr||!app)return;
+  for(const s of bldSprites){entC.removeChild(s);s.destroy();}
+  for(const s of decorSprites){entC.removeChild(s);s.destroy();}
+  for(const e of bldLabels){labelC.removeChild(e.lb);e.lb.destroy();}
+  bldSprites=[];decorSprites=[];bldLabels=[];
+  const oldTex=TEX.terrain;
+  TEX.terrain=nearestTex(PIXI.Texture.from(mapCanvas));
+  terrainSpr.texture=TEX.terrain;
+  if(oldTex){try{oldTex.destroy(true);}catch(e){}}
+  const mc=document.createElement('canvas');mc.width=128;mc.height=128;
+  mc.getContext('2d').drawImage(mapCanvas,0,0,128,128);
+  IMG._mini=mc;
+  addBuildingSprites();
+  screenDirty=true;
+}
 async function buildScene(){
   const opts={resizeTo:window,antialias:false,backgroundColor:0x141a10,resolution:Math.min(devicePixelRatio||1,2),autoDensity:true};
   app=new PIXI.Application(opts);
@@ -2325,16 +2261,7 @@ async function buildScene(){
   CELLS.trailer2=sheetCells(IMG.trailer2);
   CELLS.tanker=sheetCells(IMG.tanker);
 
-  bldLabels=[];
-  for(const b of buildings){
-    const spr=new PIXI.Sprite(nearestTex(PIXI.Texture.from(b.img)));
-    spr.position.set(b.tx*TS,b.ty*TS);
-    spr.zIndex=(b.ty+b.h)*TS;
-    entC.addChild(spr);
-    const lb=mkText(b.name,TXT_SZ.bld,0xffe9a8,'rgba(0,0,0,0.65)');
-    labelC.addChild(lb);
-    bldLabels.push({lb,b});
-  }
+  addBuildingSprites();
   boySpr=new PIXI.Sprite();
   entC.addChild(boySpr);
   ctxText=mkText('',TXT_SZ.ctx,0xffd75e,'rgba(0,0,0,0.6)');
@@ -2636,6 +2563,35 @@ function drawMini(){
 }
 
 /* ================= СТАРТ ================= */
+/* Применяет загруженное состояние к сцене (старт игры, загрузка из слота,
+   новая игра): убирает грядки вне полей, выталкивает тракторы и игрока из
+   препятствий, возвращает игрока за руль (если сохранён за рулём),
+   сбрасывает камеру. Позиции тракторов и игрока берутся из сейва (v7). */
+function applyLoadedState(){
+  for(const k in S.soil){
+    const x=k%MW,y=(k/MW)|0;
+    if(!isFieldTile(x,y))delete S.soil[k];
+  }
+  for(const tr of S.tractors){
+    if(hitSolid(tr,13,10)){const fp=findFreeSpot((spawn.x+2)*TS,(spawn.y-3)*TS,13,10);tr.x=fp.x;tr.y=fp.y;}
+    tr._trl=null;
+  }
+  /* «за рулём» из сейва (v7): возвращаем игрока в трактор */
+  if(pendRiding!==null&&S.tractors[pendRiding]){riding=pendRiding;boy.hidden=true;}
+  else{riding=null;boy.hidden=false;}
+  /* игрок пешком: позиция из сейва (v7) или рядом с первым трактором */
+  if(!boy.hidden){
+    if(pendBoy){boy.x=pendBoy.x;boy.y=pendBoy.y;boy.face=pendBoy.face;}
+    else{const bp=findFreeSpot(S.tractors[0].x+24,S.tractors[0].y+10,5,4);boy.x=bp.x;boy.y=bp.y;boy.face=[1,2];}
+    boy.dx=0;boy.dy=1;
+    if(hitSolid(boy,5,4)){const bp2=findFreeSpot(boy.x,boy.y,5,4);boy.x=bp2.x;boy.y=bp2.y;}
+  }
+  pendBoy=null;pendRiding=null;
+  $('fIc').textContent=(riding!==null&&S.tractors[riding].down)?'⬆️':'⬇️';
+  const p=playerEnt();
+  cam.x=Math.max(0,Math.min(MW*TS-viewW,p.x-viewW/2));
+  cam.y=Math.max(0,Math.min(MH*TS-viewH,p.y-viewH/2));
+}
 function showBootError(msg){
   console.error(msg);
   setLoad('⚠ '+msg);
@@ -2649,38 +2605,26 @@ function finishBoot(){
   document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
   updateChips(true);
   save();
-  if(!S.helpShown){S.helpShown=true;openHelp();}
-  else toggleMainMenu(true);
+  /* При любом старте игры открывается главное меню (справка — кнопкой «Как играть?») */
+  S.helpShown=true;
+  toggleMainMenu(true);
 }
 function boot(){
   if(booted)return;booted=true;
   try{
+    const miss=['boy','t1','t2','t3','t4','t5','trailer1','tanker','autotile','bld_barn','bld_garage','bld_shopA','bld_shopF','bld_dealer'].filter(k=>!IMG[k]);
+    if(miss.length)throw new Error('не загрузились спрайты: '+miss.join(', ')+' — проверьте доступ к GitHub и обновите страницу');
     setLoad('Генерация построек…');
     findSpawn();setupWorld();
     if(!loadSave())S=newGame();
-    for(const k in S.soil){
-      const x=k%MW,y=(k/MW)|0;
-      if(!isFieldTile(x,y))delete S.soil[k];
-    }
-    for(const tr of S.tractors){
-      if(hitSolid(tr,13,10)){tr.x=(spawn.x+2)*TS;tr.y=(spawn.y-3)*TS;}
-      tr._trl=null;
-    }
-    boy.x=S.tractors[0].x+24;boy.y=S.tractors[0].y+10;boy.dx=0;boy.dy=1;boy.face=[1,2];
-    if(hitSolid(boy,5,4)){boy.x=(spawn.x+1)*TS;boy.y=(spawn.y+1)*TS;}
     resize();
-    const p=playerEnt();
-    cam.x=Math.max(0,Math.min(MW*TS-viewW,p.x-viewW/2));
-    cam.y=Math.max(0,Math.min(MH*TS-viewH,p.y-viewH/2));
+    applyLoadedState();
     setLoad('Инициализация PIXI…');
     Promise.resolve(buildScene()).then(finishBoot).catch(err=>showBootError('Ошибка запуска PIXI: '+(err&&err.message?err.message:err)));
   }catch(err){
     showBootError('Ошибка запуска: '+(err&&err.message?err.message:err));
   }
 }
-$('offlineBtn').addEventListener('click',()=>{
-  try{ensureFallbacks();finishAssets();boot();}catch(err){setLoad('⚠ '+err.message);}
-});
 (async function init(){
   setLoad('Загрузка движка pixi.js…');
   const pixiP=loadPixi().catch(err=>{
@@ -2695,9 +2639,10 @@ $('offlineBtn').addEventListener('click',()=>{
   try{await pixiP;}catch(e){return;}
   await fontP;
   setLoad('Загрузка карты и спрайтов из репозитория…');
-  setTimeout(()=>{if(!booted){$('offlineBtn').style.display='block';setLoad('Если ассеты не грузятся (нет доступа к GitHub) — нажмите кнопку ниже или дождитесь таймаута.');}},5000);
+  fetchGuide();
+  setTimeout(()=>{if(!booted){const ob=$('offlineBtn');ob.textContent='🔄 Повторить загрузку';ob.style.display='block';ob.onclick=()=>location.reload();setLoad('Ассеты грузятся медленно или недоступны — нажмите «Повторить» или дождитесь таймаута.');}},5000);
   try{await loadAssets();}catch(e){console.error(e);}
-  try{ensureFallbacks();finishAssets();}catch(e){console.error(e);setLoad('⚠ '+e.message);}
+  try{finishAssets();}catch(e){console.error(e);setLoad('⚠ '+e.message);}
   boot();
 })();
 </script>
