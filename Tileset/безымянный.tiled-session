@@ -20,23 +20,38 @@
             "scaleInEditor": 5.5
         },
         "Autotile_Grass_and_Dirt_Path_Tileset.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 4
+        },
+        "Buildings.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "Crops_Tileset.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "Exterior_Tileset.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "Khutorok.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 974,
-                "y": 1244
+                "x": 1287.6666666666665,
+                "y": 1056.6666666666665
+            }
+        },
+        "Khutorok_.tmx": {
+            "scale": 0.589111328125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1024.4243680066309,
+                "y": 1023.5756319933691
             }
         },
         "Nature_Tileset.tsx": {
@@ -68,6 +83,11 @@
     "last.exportedFilePath": "C:/Games/Farm/Хуторок 2/Tiled map",
     "last.externalTilesetPath": "C:/Games/Farm/Хуторок 2/Tileset",
     "last.imagePath": "C:/Games/Farm/Хуторок 2/Tileset",
+    "last.worldFilePath": "C:/Games/Farm/Хуторок 2/Tileset",
+    "loadedWorlds": [
+        "C:/Games/Farm/Хуторок 2/Tileset/Khutorok.world",
+        "C:/Games/Farm/Хуторок 2/Tileset/Khutorok.world"
+    ],
     "map.height": 128,
     "map.lastUsedExportFilter": "JSON map-файлы (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
@@ -75,27 +95,32 @@
     "map.tileWidth": 16,
     "map.width": 128,
     "openFiles": [
-        "3.tsx",
-        "1.tsx",
-        "Khutorok.tmx"
+        "Khutorok.tmx",
+        "Nature_Tileset.tsx",
+        "Buildings.tsx",
+        "Exterior_Tileset.tsx",
+        "Crops_Tileset.tsx",
+        "Autotile_Grass_and_Dirt_Path_Tileset.tsx"
     ],
     "project": "безымянный.tiled-project",
     "recentFiles": [
-        "Exterior_Tileset.tsx",
-        "Crops_Tileset.tsx",
-        "Tileset_Floor_Detail.tsx",
-        "Nature_Tileset.tsx",
         "Autotile_Grass_and_Dirt_Path_Tileset.tsx",
+        "Crops_Tileset.tsx",
+        "Exterior_Tileset.tsx",
+        "Buildings.tsx",
+        "Nature_Tileset.tsx",
         "Khutorok.tmx",
+        "Tileset_Floor_Detail.tsx",
+        "Khutorok_.tmx",
         "3.tsx",
         "1.tsx",
         "безымянный.tmj",
-        "2.tsx",
-        "безымянный.tmx"
+        "2.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,
         "width": 16
-    }
+    },
+    "tileset.type": 1
 }
